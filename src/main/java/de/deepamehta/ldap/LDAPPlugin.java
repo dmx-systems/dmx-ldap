@@ -1,41 +1,44 @@
 package de.deepamehta.ldap;
 
 
-import de.deepamehta.accesscontrol.AuthorizationMethod;
-import de.deepamehta.accesscontrol.AccessControlService;
-
-import de.deepamehta.core.service.accesscontrol.AccessControl;
-import de.deepamehta.core.service.accesscontrol.Credentials;
-import de.deepamehta.core.service.CoreService;
-import de.deepamehta.core.storage.spi.DeepaMehtaTransaction;
-import de.deepamehta.core.model.SimpleValue;
-import de.deepamehta.core.model.TopicModel;
-import de.deepamehta.core.osgi.PluginActivator;
-import de.deepamehta.core.service.Inject;
-import de.deepamehta.core.Topic;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
+import java.util.Hashtable;
+import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.BasicAttribute;
+import javax.naming.directory.BasicAttributes;
 import javax.naming.directory.DirContext;
+import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
+import javax.naming.ldap.Control;
 import javax.naming.ldap.InitialLdapContext;
 import javax.naming.ldap.LdapContext;
-import javax.naming.ldap.Control;
-import javax.naming.ldap.StartTlsResponse;
 import javax.naming.ldap.StartTlsRequest;
+import javax.naming.ldap.StartTlsResponse;
 import javax.net.ssl.SSLSession;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.Hashtable;
-import java.util.concurrent.Callable;
+import de.deepamehta.accesscontrol.AccessControlService;
+import de.deepamehta.accesscontrol.AuthorizationMethod;
+import de.deepamehta.core.Topic;
+import de.deepamehta.core.osgi.PluginActivator;
+import de.deepamehta.core.service.Inject;
+import de.deepamehta.core.service.accesscontrol.Credentials;
+import de.deepamehta.core.storage.spi.DeepaMehtaTransaction;
+import de.deepamehta.ldap.service.LDAPPluginService;
 
 
-public class LDAPPlugin extends PluginActivator implements AuthorizationMethod {
+public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService {
 
-    private Logger logger = Logger.getLogger(getClass().getName());
+    private static Logger logger = Logger.getLogger(LDAPPlugin.class.getName());
+    
     private static final String LDAP_SERVER = System.getProperty("dm4.ldap.server", "127.0.0.1");
     private static final String LDAP_PORT = System.getProperty("dm4.ldap.port");
     private static final String LDAP_MANAGER = System.getProperty("dm4.ldap.manager", "");
@@ -44,6 +47,12 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod {
     private static final String LDAP_USER_ATTRIBUTE = System.getProperty("dm4.ldap.user_attribute", "");
     private static final String LDAP_FILTER = System.getProperty("dm4.ldap.filter", "");
     private static final String LDAP_PROTOCOL = System.getProperty("dm4.ldap.protocol", "");
+
+    private static final String LDAP_USER_CREATION_ENABLED = System.getProperty("dm4.ldap.user_creation.enabled", "false");
+    private static final String LDAP_MEMBER_GROUP = System.getProperty("dm4.ldap.member_group", "");
+
+    private static final String LDAP_PASSWORD_HASH_METHOD = System.getProperty("dm4.ldap.password_hash.method", "SHA");
+    private static final String LDAP_PASSWORD_HASH_SALT = System.getProperty("dm4.ldap.password_hash.salt", "");
 
     // ---------------------------------------------------------------------------------------------- Instance Variables
 
@@ -78,22 +87,83 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod {
 
     @Override
     public Topic checkCredentials(Credentials cred) {
-        if (checkLdapCredentials(cred.username, cred.plaintextPassword)) {
+    	String saltedPassword = LDAP_PASSWORD_HASH_SALT + cred.plaintextPassword;
+        if (checkLdapCredentials(cred.username, saltedPassword)) {
             logger.info("LDAP login: OK");
             Topic usernameTopic = acs.getUsernameTopic(cred.username);
             if (usernameTopic != null) {
                 return usernameTopic;
             } else {
-                return createUsername(cred.username);
+                return createUsernameTopic(cred.username);
             }
         } else {
             return null;
         }
     }
 
-    // ------------------------------------------------------------------------------------------------- Private Methods
+    @Override
+    public Topic createUser(Credentials cred) {
+    	if (!LDAP_USER_CREATION_ENABLED.equals("true")) {
+    		logger.warning("User creation is disabled in plugin configuration!");
+    		return null;
+    	}
+    	
+    	String hashedPassword = null;
+    	try {
+    		hashedPassword = hashPassword(cred.plaintextPassword);
+    	} catch (NoSuchAlgorithmException nsa) {
+    		logger.info("Invalid hash algorithm: " + LDAP_PASSWORD_HASH_METHOD);
+    		
+    		return null;
+    	}
 
-    private Topic createUsername(String username) {
+    	if (createUser(LDAP_USER_BASE, LDAP_USER_ATTRIBUTE, cred.username, hashedPassword, LDAP_MEMBER_GROUP)) {
+            logger.info("LDAP create user: OK");
+            Topic usernameTopic = acs.getUsernameTopic(cred.username);
+            if (usernameTopic != null) {
+                return usernameTopic;
+            } else {
+                return createUsernameTopic(cred.username);
+            }
+    		
+    	} else {
+        	return null;
+    	}
+    	
+    }
+
+    // ------------------------------------------------------------------------------------------------- Private Methods
+    
+    private String hashPassword(String password) throws NoSuchAlgorithmException {
+    	MessageDigest digest = MessageDigest.getInstance(LDAP_PASSWORD_HASH_METHOD);
+    	
+    	String saltedPassword = LDAP_PASSWORD_HASH_SALT + password;
+    	
+    	byte[] base64Hash = Base64.getEncoder().encode(digest.digest(saltedPassword.getBytes(StandardCharsets.UTF_8)));
+    	
+    	String result = String.format("{%s}%s", LDAP_PASSWORD_HASH_METHOD.replace("-", ""), new String(base64Hash));
+    	
+    	return result;
+    }
+    
+    private static LdapContext createDefaultContext() throws NamingException {
+        return createContext(LDAP_PROTOCOL, LDAP_SERVER, LDAP_PORT, LDAP_MANAGER, LDAP_PASSWORD);
+    }
+    
+    private static LdapContext createContext(
+    		String ldapProtocol,
+    		String ldapServer,
+    		String ldapPort,
+    		String ldapManager,
+    		String ldapPassword) throws NamingException {
+        final String port = (ldapPort == null) ? (ldapProtocol.equals("LDAPS") ? "636" : "389") : ldapPort;
+        final String protocol = ldapProtocol.equals("LDAPS") ? "ldaps://" : "ldap://";
+        final String server = protocol + ldapServer + ":" + port;
+        
+        return connect(server, ldapManager, ldapPassword);
+    }
+
+    private Topic createUsernameTopic(String username) {
         DeepaMehtaTransaction tx = dm4.beginTx();
         try {
             Topic usernameTopic = acs.createUsername(username);
@@ -105,6 +175,69 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod {
         } finally {
             tx.finish();
         }
+    }
+    
+    private static boolean createUser(
+    		String ldapUserBase,
+    		String ldapUserAttribute,
+    		String userName, String password,
+    		String memberGroup) {
+    	try {
+    		LdapContext ctx = createDefaultContext();
+    		if (ctx == null) {
+    			return false;
+    		}
+    		
+    		return createUserImpl(ctx, ldapUserBase, ldapUserAttribute, userName, password, memberGroup);
+    				
+    	} catch (Exception e) {
+    		throw new RuntimeException("Creating user in LDAP failed", e);
+    	}
+    }
+    
+    private static boolean createUserImpl(
+    		LdapContext ctx,
+    		String ldapUserBase,
+    		String ldapUserAttribute,
+    		String userName, String password,
+    		String memberGroup) throws NamingException {
+    	String entryDN = String.format("%s=%s,%s", ldapUserAttribute, userName, ldapUserBase);
+    	
+    	Attribute cn = new BasicAttribute("cn", userName);
+    	Attribute sn = new BasicAttribute("sn", "deepamehta-ldap");
+    	Attribute userPassword = new BasicAttribute("userPassword", password);
+
+    	Attribute oc = new BasicAttribute("objectClass");
+    	oc.add("top");
+    	oc.add("person");
+    	oc.add("organizationalPerson");
+    	oc.add("inetOrgPerson");
+    	
+    	BasicAttributes entry = new BasicAttributes();
+    	entry.put(oc);
+    	entry.put(cn);
+    	entry.put(sn);
+    	entry.put(userPassword);
+    	
+    	ctx.createSubcontext(entryDN, entry);
+    	
+    	if (!memberGroup.isEmpty()) {
+    		ModificationItem mi = new ModificationItem(DirContext.ADD_ATTRIBUTE,
+    				new BasicAttribute("member", entryDN));
+    		
+    		try {
+    			ctx.modifyAttributes(memberGroup, new ModificationItem[] { mi });
+    		} catch (NamingException ne) {
+    			logger.warning("Membership attribute addition failed - rollback!");
+    			
+    			// Removes user
+    			ctx.destroySubcontext(entryDN);
+    			
+    			return false;
+    		}
+    	}
+    	
+    	return true;
     }
 
     private boolean checkLdapCredentials(String username, String password) {
@@ -124,7 +257,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod {
         }
     }
 
-    private LdapContext connect(String server, String username, String password) throws NamingException {
+    private static LdapContext connect(String server, String username, String password) throws NamingException {
         Hashtable<String, Object> env = new Hashtable<String, Object>();
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         env.put(Context.PROVIDER_URL, server);
