@@ -1,0 +1,9 @@
+#    only: tags
+maven-release-build:
+  script:
+    - export MAVEN_OPTS='-Xmx128m'
+    - mvn clean install
+  artifacts:
+    paths:
+    - target/*.jar
+    name: "${CI_PROJECT_NAME}-${CI_COMMIT_TAG}"
