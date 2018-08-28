@@ -25,6 +25,8 @@ import javax.naming.ldap.StartTlsRequest;
 import javax.naming.ldap.StartTlsResponse;
 import javax.net.ssl.SSLSession;
 
+import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
+
 import de.deepamehta.accesscontrol.AccessControlService;
 import de.deepamehta.accesscontrol.AuthorizationMethod;
 import de.deepamehta.core.Topic;
@@ -50,9 +52,6 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
 
     private static final String LDAP_USER_CREATION_ENABLED = System.getProperty("dm4.ldap.user_creation.enabled", "false");
     private static final String LDAP_MEMBER_GROUP = System.getProperty("dm4.ldap.member_group", "");
-
-    private static final String LDAP_PASSWORD_HASH_METHOD = System.getProperty("dm4.ldap.password_hash.method", "SHA");
-    private static final String LDAP_PASSWORD_HASH_SALT = System.getProperty("dm4.ldap.password_hash.salt", "");
 
     // ---------------------------------------------------------------------------------------------- Instance Variables
 
@@ -87,8 +86,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
 
     @Override
     public Topic checkCredentials(Credentials cred) {
-    	String saltedPassword = LDAP_PASSWORD_HASH_SALT + cred.plaintextPassword;
-        if (checkLdapCredentials(cred.username, saltedPassword)) {
+        if (checkLdapCredentials(cred.username, cred.plaintextPassword)) {
             logger.info("LDAP login: OK");
             Topic usernameTopic = acs.getUsernameTopic(cred.username);
             if (usernameTopic != null) {
@@ -101,6 +99,8 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         }
     }
 
+	LdapShaPasswordEncoder passwordEncoder;
+
     @Override
     public Topic createUser(Credentials cred) {
     	if (!LDAP_USER_CREATION_ENABLED.equals("true")) {
@@ -108,16 +108,13 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     		return null;
     	}
     	
-    	String hashedPassword = null;
-    	try {
-    		hashedPassword = hashPassword(cred.plaintextPassword);
-    	} catch (NoSuchAlgorithmException nsa) {
-    		logger.info("Invalid hash algorithm: " + LDAP_PASSWORD_HASH_METHOD);
-    		
-    		return null;
+    	if (passwordEncoder == null) {
+    		passwordEncoder = new LdapShaPasswordEncoder();
     	}
+    	
+    	String encodedPassword = passwordEncoder.encode(cred.plaintextPassword);
 
-    	if (createUser(LDAP_USER_BASE, LDAP_USER_ATTRIBUTE, cred.username, hashedPassword, LDAP_MEMBER_GROUP)) {
+    	if (createUser(LDAP_USER_BASE, LDAP_USER_ATTRIBUTE, cred.username, encodedPassword, LDAP_MEMBER_GROUP)) {
             logger.info("LDAP create user: OK");
             Topic usernameTopic = acs.getUsernameTopic(cred.username);
             if (usernameTopic != null) {
@@ -133,18 +130,6 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     }
 
     // ------------------------------------------------------------------------------------------------- Private Methods
-    
-    private String hashPassword(String password) throws NoSuchAlgorithmException {
-    	MessageDigest digest = MessageDigest.getInstance(LDAP_PASSWORD_HASH_METHOD);
-    	
-    	String saltedPassword = LDAP_PASSWORD_HASH_SALT + password;
-    	
-    	byte[] base64Hash = Base64.getEncoder().encode(digest.digest(saltedPassword.getBytes(StandardCharsets.UTF_8)));
-    	
-    	String result = String.format("{%s}%s", LDAP_PASSWORD_HASH_METHOD.replace("-", ""), new String(base64Hash));
-    	
-    	return result;
-    }
     
     private static LdapContext createDefaultContext() throws NamingException {
         return createContext(LDAP_PROTOCOL, LDAP_SERVER, LDAP_PORT, LDAP_MANAGER, LDAP_PASSWORD);
