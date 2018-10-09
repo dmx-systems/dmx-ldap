@@ -1,6 +1,7 @@
 package de.deepamehta.ldap;
 
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -185,7 +186,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     		String ldapUserBase,
     		String ldapUserAttribute,
     		String userName, String password,
-    		String memberGroup) throws NamingException {
+    		String memberGroup) {
     	String entryDN = String.format("%s=%s,%s", ldapUserAttribute, userName, ldapUserBase);
     	
     	Attribute cn = new BasicAttribute("cn", userName);
@@ -204,7 +205,13 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     	entry.put(sn);
     	entry.put(userPassword);
     	
-    	ctx.createSubcontext(entryDN, entry);
+    	try {
+    		ctx.createSubcontext(entryDN, entry);
+    	} catch (NamingException ne) {
+    		logWarning("Unable to create user subcontext", ne);
+    		
+    		return false;
+    	}
     	
     	if (!memberGroup.isEmpty()) {
     		ModificationItem mi = new ModificationItem(DirContext.ADD_ATTRIBUTE,
@@ -213,10 +220,14 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     		try {
     			ctx.modifyAttributes(memberGroup, new ModificationItem[] { mi });
     		} catch (NamingException ne) {
-    			logger.warning("Membership attribute addition failed - rollback!");
+    			logWarning("Membership attribute addition failed - rollback!", ne);
     			
     			// Removes user
-    			ctx.destroySubcontext(entryDN);
+    			try {
+    				ctx.destroySubcontext(entryDN);
+    			} catch (NamingException ne2) {
+    				logWarning("Unable to rollback context creation!", ne2);
+    			}
     			
     			return false;
     		}
@@ -237,12 +248,37 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
             }
             LdapContext ctx2 = connect(server, cn, password);
             return ctx2 != null;
-        } catch (Exception e) {
+        } catch (NamingException e) {
+        	logWarning("Checking LDAP credentials failed", e);
             throw new RuntimeException("Checking LDAP credentials failed", e);
         }
     }
+    
+    private static void appendMessage(StringBuffer sb, Throwable throwable) {
+    	sb.append(throwable.getLocalizedMessage());
+    	
+    	if (throwable instanceof NamingException) {
+        	sb.append(": ");
+        	sb.append(((NamingException) throwable).getExplanation());
+    	}
+    	
+    	Throwable parent = throwable.getCause();
+    	if (parent != null) {
+    		sb.append(" caused by ");
+    		appendMessage(sb, parent);
+    	}
+    }
+    
+    private static void logWarning(String message, Throwable throwable) {
+    	StringBuffer sb = new StringBuffer();
+    	sb.append(message);
+    	sb.append(": ");
+    	appendMessage(sb, throwable);
+    	
+    	logger.warning(sb.toString());
+    }
 
-    private static LdapContext connect(String server, String username, String password) throws NamingException {
+    private static LdapContext connect(String server, String username, String password) {
         Hashtable<String, Object> env = new Hashtable<String, Object>();
         env.put(Context.SECURITY_AUTHENTICATION, "simple");
         env.put(Context.PROVIDER_URL, server);
@@ -257,16 +293,22 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         // the following is helpful in debugging errors
         // env.put("com.sun.jndi.ldap.trace.ber", System.err);
         Control[] arr = new Control[0];
-        LdapContext ctx = new InitialLdapContext(env, arr);
-        if (LDAP_PROTOCOL.equals("StartTLS")) {
-            try {
-                StartTlsResponse tls = (StartTlsResponse) ctx.extendedOperation(new StartTlsRequest());
-                SSLSession session = tls.negotiate();
-            } catch (Exception e) {
-                throw new RuntimeException("Could not establish TLS connection: " + e.toString());
-            }
+        try {
+	        LdapContext ctx = new InitialLdapContext(env, arr);
+	        if (LDAP_PROTOCOL.equals("StartTLS")) {
+	                StartTlsResponse tls = (StartTlsResponse) ctx.extendedOperation(new StartTlsRequest());
+	                SSLSession session = tls.negotiate();
+	        }
+	        return ctx;
+        } catch (NamingException e) {
+            logWarning("Could not create initial context", e);
+
+            throw new RuntimeException("Could not create initial context", e);
+        	
+        } catch (IOException e) {
+            logWarning("Could not establish TLS connection", e);
+            throw new RuntimeException("Could not establish TLS connection", e);
         }
-        return ctx;
     }
 
     private static String lookupUserCn (LdapContext ctx, String ldapSearchBase, String uid) throws NamingException {
