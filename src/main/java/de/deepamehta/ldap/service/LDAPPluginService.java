@@ -6,5 +6,7 @@ import de.deepamehta.core.service.accesscontrol.Credentials;
 public interface LDAPPluginService {
 
 	Topic createUser(Credentials credentials);
+
+	Topic changePassword(Credentials cred);
 	
 }

@@ -100,17 +100,13 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         }
     }
 
-	LdapShaPasswordEncoder passwordEncoder;
+	LdapShaPasswordEncoder passwordEncoder = new LdapShaPasswordEncoder();
 
     @Override
     public Topic createUser(Credentials cred) {
     	if (!LDAP_USER_CREATION_ENABLED.equals("true")) {
     		logger.warning("User creation is disabled in plugin configuration!");
     		return null;
-    	}
-    	
-    	if (passwordEncoder == null) {
-    		passwordEncoder = new LdapShaPasswordEncoder();
     	}
     	
     	String encodedPassword = passwordEncoder.encode(cred.plaintextPassword);
@@ -128,6 +124,27 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         	return null;
     	}
     	
+    }
+
+    @Override
+    public Topic changePassword(Credentials cred) {
+    	if (!LDAP_USER_CREATION_ENABLED.equals("true")) {
+    		logger.warning("User creation is disabled in plugin configuration!");
+    		return null;
+    	}
+    	
+    	String encodedPassword = passwordEncoder.encode(cred.plaintextPassword);
+
+    	Topic usernameTopic = acs.getUsernameTopic(cred.username);
+    	if (usernameTopic != null) {
+        	if (changePassword(LDAP_USER_BASE, LDAP_USER_ATTRIBUTE, cred.username, encodedPassword)) {
+                logger.info("LDAP change user: OK");
+                
+                return usernameTopic;
+        	}
+	    }
+    	
+    	return null;
     }
 
     // ------------------------------------------------------------------------------------------------- Private Methods
@@ -180,7 +197,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     		throw new RuntimeException("Creating user in LDAP failed", e);
     	}
     }
-    
+        
     private static boolean createUserImpl(
     		LdapContext ctx,
     		String ldapUserBase,
@@ -233,6 +250,44 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     		}
     	}
     	
+    	return true;
+    }
+    
+    private static boolean changePassword(
+    		String ldapUserBase,
+    		String ldapUserAttribute,
+    		String userName, String password) {
+    	try {
+    		LdapContext ctx = createDefaultContext();
+    		if (ctx == null) {
+    			return false;
+    		}
+    		
+    		return changePasswordImpl(ctx, ldapUserBase, ldapUserAttribute, userName, password);
+    				
+    	} catch (Exception e) {
+    		throw new RuntimeException("Creating user in LDAP failed", e);
+    	}
+    }
+    
+    private static boolean changePasswordImpl(
+    		LdapContext ctx,
+    		String ldapUserBase,
+    		String ldapUserAttribute,
+    		String userName, String password) {
+    	String entryDN = String.format("%s=%s,%s", ldapUserAttribute, userName, ldapUserBase);
+    	
+		ModificationItem mi = new ModificationItem(DirContext.ADD_ATTRIBUTE,
+				new BasicAttribute("userPassword", password));
+    	
+    	try {
+			ctx.modifyAttributes(entryDN, new ModificationItem[] { mi });
+    	} catch (NamingException ne) {
+    		logWarning("Unable to rename user", ne);
+    		
+    		return false;
+    	}
+    	    	
     	return true;
     }
 
@@ -307,6 +362,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         	
         } catch (IOException e) {
             logWarning("Could not establish TLS connection", e);
+            
             throw new RuntimeException("Could not establish TLS connection", e);
         }
     }
