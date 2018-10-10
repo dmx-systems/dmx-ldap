@@ -100,8 +100,6 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         }
     }
 
-	LdapShaPasswordEncoder passwordEncoder = new LdapShaPasswordEncoder();
-
     @Override
     public Topic createUser(Credentials cred) {
     	if (!LDAP_USER_CREATION_ENABLED.equals("true")) {
@@ -109,7 +107,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     		return null;
     	}
     	
-    	String encodedPassword = passwordEncoder.encode(cred.plaintextPassword);
+    	String encodedPassword = new LdapShaPasswordEncoder().encode(cred.plaintextPassword);
 
     	if (createUser(LDAP_USER_BASE, LDAP_USER_ATTRIBUTE, cred.username, encodedPassword, LDAP_MEMBER_GROUP)) {
             logger.info("LDAP create user: OK");
@@ -133,7 +131,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     		return null;
     	}
     	
-    	String encodedPassword = passwordEncoder.encode(cred.plaintextPassword);
+    	String encodedPassword = new LdapShaPasswordEncoder().encode(cred.plaintextPassword);
 
     	Topic usernameTopic = acs.getUsernameTopic(cred.username);
     	if (usernameTopic != null) {
@@ -277,7 +275,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     		String userName, String password) {
     	String entryDN = String.format("%s=%s,%s", ldapUserAttribute, userName, ldapUserBase);
     	
-		ModificationItem mi = new ModificationItem(DirContext.ADD_ATTRIBUTE,
+		ModificationItem mi = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
 				new BasicAttribute("userPassword", password));
     	
     	try {
