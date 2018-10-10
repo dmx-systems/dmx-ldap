@@ -7,7 +7,7 @@
     <name>DeepaMehta 4 LDAP</name>
     <groupId>de.deepamehta</groupId>
     <artifactId>dm49-ldap</artifactId>
-    <version>0.3.2</version>
+    <version>0.3.1</version>
     <packaging>bundle</packaging>
 
     <properties>
