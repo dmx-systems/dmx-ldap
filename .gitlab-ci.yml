@@ -7,3 +7,4 @@ maven-release-build:
     paths:
     - target/*.jar
     name: "${CI_PROJECT_NAME}-${CI_COMMIT_TAG}"
+    
