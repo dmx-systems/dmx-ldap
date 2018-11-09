@@ -6,19 +6,19 @@
 
     <name>DeepaMehta 4 LDAP</name>
     <groupId>de.deepamehta</groupId>
-    <artifactId>dm49-ldap-climbo</artifactId>
-    <version>0.3.2</version>
+    <artifactId>dm49-ldap</artifactId>
+    <version>0.3.3-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <properties>
-        <dm4.deploy.dir>../climbo-ldap-deepamehta/bundle-deploy</dm4.deploy.dir>
+        <!--dm4.deploy.dir>../climbo-ldap-deepamehta/bundle-deploy</dm4.deploy.dir-->
     </properties>
 
     <parent>
         <groupId>de.deepamehta</groupId>
         <artifactId>deepamehta-plugin</artifactId>
         <version>4.9.1</version>
-        <relativePath>../dm4-plugin/pom.xml</relativePath>
+        <!--relativePath>../dm4-plugin/pom.xml</relativePath-->
     </parent>
 
     <dependencies>

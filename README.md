@@ -1,28 +1,22 @@
 
-##LDAP Authentication for DeepaMehta
+## LDAP Authentication for DeepaMehta 4
 
-####LDAP Settings (deepamehta/pom.xml)
+### Configuration / Usage
 
-- ######Normal LDAP protocol without encryption
+In `config.properties` operatores have the following properties to configure:
 
-        <dm4.ldap.protocol></dm4.ldap.protocol>
-        <dm4.ldap.server>127.0.0.1</dm4.ldap.server>
-        <dm4.ldap.port>389</dm4.ldap.port>
-        <dm4.ldap.manager>admin</dm4.ldap.manager>
-        <dm4.ldap.password>password</dm4.ldap.password>
-        <dm4.ldap.user_base>ou=users,o=mojo</dm4.ldap.user_base>
-        <dm4.ldap.user_attribute>uid</dm4.ldap.user_attribute>
-        <dm4.ldap.filter>objectClass=inetOrgPerson</dm4.ldap.filter>
+#### LDAP Protocol without encryption
 
-- ######StartTLS
-
-        <dm4.ldap.protocol>StartTLS</dm4.ldap.protocol>
-        <dm4.ldap.port>389</dm4.ldap.port>
-
-- ######LDAPS/SSL
-
-        <dm4.ldap.protocol>LDAPS</dm4.ldap.protocol>
-        <dm4.ldap.port>636</dm4.ldap.port>
+```
+dm4.ldap.protocol = LDAP
+dm4.ldap.server = 127.0.0.1
+dm4.ldap.port = 389
+dm4.ldap.manager = 
+dm4.ldap.password = 
+dm4.ldap.user_base = 
+dm4.ldap.user_attribute = 
+dm4.ldap.filter = 
+```
 
 Known Protocols are: 
 
@@ -39,6 +33,21 @@ Note: For self signed certificates, dm4.ldap.server must contain the hostname of
 
 
 #### Changelog
+
+Next Feature Release: 
+
+* Fetch and write user profile data in LDAP System
+* Creating new user accounts in LDAP System
+
+**0.4.0** -- Upcoming
+
+Next maintenance release:
+
+* Microsoft ActiveDirectory Compatibility
+* Throw exceptions in cases of misconfiguration or any kind of error
+* Complete user and developer documentation in README
+* Info, Warning, Debug Logging
+* Relase Notes
 
 **0.3.0** -- Feb 27, 2018
 
