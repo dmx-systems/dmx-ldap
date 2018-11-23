@@ -138,9 +138,10 @@ class JndiLDAP implements LDAP {
 	}
 	
     private String lookupUserCn (LdapContext ctx, String uid) throws NamingException {
-        String searchFilter = StringUtils.isEmpty(configuration.userAcceptanceFilter)
-        		? String.format("(%s=%s)", configuration.userAttribute, uid)
-                : String.format("(&(%s)(%s=%s))", configuration.userAcceptanceFilter, configuration.userAttribute, uid);
+    	
+        String searchFilter = StringUtils.isEmpty(configuration.userFilter)
+        		? String.format("(%s=%s,%s)", configuration.userAttribute, uid, configuration.userBase)
+                : String.format("(&(%s)(%s=%s))", configuration.userFilter, configuration.userAttribute, uid);
         		
 		pluginLog.actionHint("Complete filter expression for user lookup: %s", searchFilter);
         
@@ -220,11 +221,10 @@ class JndiLDAP implements LDAP {
         // will be returned as a byte[] instead of a String
         env.put("java.naming.ldap.attributes.binary", "objectSID");
         
-        // the following is helpful in debugging errors
-        if (configuration.loggingMode == Configuration.LoggingMode.TROUBLESHOOTING) {
-        	pluginLog.actionHint("Enabling LDAP tracing option");
-        	
-        	env.put("com.sun.jndi.ldap.trace.ber", System.err);
+        // Platform-specific logging options
+        if (configuration.loggingMode == Configuration.LoggingMode.DEBUG) {
+        	pluginLog.actionHint("Enabling detailed SSL logging");
+        	System.setProperty("javax.net.debug", "all");
         }
         
         Control[] arr = new Control[0];

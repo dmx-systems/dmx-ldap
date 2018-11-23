@@ -10,13 +10,13 @@ In `config.properties` operatores have the following properties to configure:
 ```
 dm4.ldap.protocol = LDAP
 dm4.ldap.server = 127.0.0.1
-dm4.ldap.port = 389
+dm4.ldap.port = 
 dm4.ldap.manager = 
 dm4.ldap.password = 
 dm4.ldap.user_base = 
 dm4.ldap.user_attribute = 
-dm4.ldap.filter = 
-dm4.ldap.logging_mode = production
+dm4.ldap.user_filter = 
+dm4.ldap.logging = production
 ```
 
 Known Protocols are: 
@@ -32,10 +32,10 @@ Additional settings for self-signed certificates used with keystore:
 
 Note: For self signed certificates, dm4.ldap.server must contain the hostname of the certificate, not the IP address.
 
-Known logging modes are:
+Known logging values are:
  
-- production (default): Only warnings and errors are logged including possible misconfigurations.
-- troubleshooting: Hints, warning and errors are extensively logged during configuration and runtime phase.
+- INFO (default): Only warnings and errors are logged including possible misconfigurations.
+- DEBUG: Hints, warning and errors are extensively logged during configuration and runtime phase.
 
 #### Changelog
 

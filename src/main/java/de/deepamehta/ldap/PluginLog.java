@@ -20,9 +20,9 @@ interface PluginLog {
 	static PluginLog newInstance(Configuration.LoggingMode lm) {
 		switch (lm) {
 			default:
-			case PRODUCTION:
+			case INFO:
 				return new ProductionLog();
-			case TROUBLESHOOTING:
+			case DEBUG:
 				return new TroubleShootingLog();
 		}
 	}
