@@ -140,15 +140,16 @@ class JndiLDAP implements LDAP {
     private String lookupUserCn (LdapContext ctx, String uid) throws NamingException {
     	
         String searchFilter = StringUtils.isEmpty(configuration.userFilter)
-        		? String.format("(%s=%s,%s)", configuration.userAttribute, uid, configuration.userBase)
+        		? String.format("(%s=%s)", configuration.userAttribute, uid)
                 : String.format("(&(%s)(%s=%s))", configuration.userFilter, configuration.userAttribute, uid);
         		
 		pluginLog.actionHint("Complete filter expression for user lookup: %s", searchFilter);
-        
+		
         SearchControls searchControls = new SearchControls();
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
         
         NamingEnumeration<SearchResult> results = ctx.search(configuration.userBase, searchFilter, searchControls);
+        pluginLog.actionHint("Search base is: %s", configuration.userBase);
         
         if (results.hasMoreElements()) {
             pluginLog.actionHint("Lookup using search filter returned non-empty result");

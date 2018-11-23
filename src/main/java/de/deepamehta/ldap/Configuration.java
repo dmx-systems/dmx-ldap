@@ -186,7 +186,7 @@ public class Configuration {
 			}
 		} else {
 			if (StringUtils.isNotEmpty(trustStore)) {
-				log.configurationWarning("A trust store located at %s was specified but using a non-SSL/TLS protocol. Check configuration.");
+				log.configurationWarning("A trust store located at %s was specified but using a non-SSL/TLS protocol. Check configuration.", trustStore);
 			}
 		}
 		
