@@ -262,7 +262,7 @@ class JndiLDAP implements LDAP {
 			try {
 				ctx.close();
 			} catch (NamingException ne) {
-				// TODO: Log
+				pluginLog.actionWarning("Exception while closing connection", ne);
 			}
 		}
 	}

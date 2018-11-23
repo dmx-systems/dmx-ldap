@@ -40,7 +40,6 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     	try {
     		configuration = Configuration.createFromProperties();
     	} catch (Exception e) {
-    		// LOG:
     		throw new RuntimeException("Error parsing configuration", e);
     	}
     	

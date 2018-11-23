@@ -74,8 +74,6 @@ public class Configuration {
 	    c.userAcceptanceFilter = System.getProperty("dm4.ldap.filter", "");
 	    c.userMemberGroup = System.getProperty("dm4.ldap.member_group", "");
 
-	    c.compile();
-	    
 	    return c;
 	}
 	
