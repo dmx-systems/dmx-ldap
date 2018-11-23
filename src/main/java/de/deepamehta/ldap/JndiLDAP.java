@@ -161,7 +161,7 @@ class JndiLDAP implements LDAP {
             
             return searchResult.getNameInNamespace();
         } else {
-            pluginLog.actionHint("Lookup using search filter was empty.");
+            pluginLog.actionWarning("Lookup using search filter was empty.", null);
             
             return null;
         }
