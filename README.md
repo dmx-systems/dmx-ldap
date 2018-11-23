@@ -16,13 +16,14 @@ dm4.ldap.password =
 dm4.ldap.user_base = 
 dm4.ldap.user_attribute = 
 dm4.ldap.filter = 
+dm4.ldap.logging_mode = production
 ```
 
 Known Protocols are: 
 
 - StartTLS (ldap://HOST:389) - default port is 389
 - LDAPS (ldaps://HOST:636) - default port is 636
-- Any other value means "normal LDAP protocol without encryption" (ldap://HOST:389) - default port is 389
+- LDAP (ldap://HOST:389) - default port is 389
 
 Additional settings for self-signed certificates used with keystore:
 
@@ -31,6 +32,10 @@ Additional settings for self-signed certificates used with keystore:
 
 Note: For self signed certificates, dm4.ldap.server must contain the hostname of the certificate, not the IP address.
 
+Known logging modes are:
+ 
+- production (default): Only warnings and errors are logged including possible misconfigurations.
+- troubleshooting: Hints, warning and errors are extensively logged during configuration and runtime phase.
 
 #### Changelog
 

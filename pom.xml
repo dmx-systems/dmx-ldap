@@ -7,13 +7,13 @@
     <name>DeepaMehta 4 LDAP</name>
     <groupId>de.deepamehta</groupId>
     <artifactId>dm49-ldap</artifactId>
-    <version>0.3.3-SNAPSHOT</version>
+    <version>0.3.4-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <properties>
-        <!--dm4.deploy.dir>../climbo-ldap-deepamehta/bundle-deploy</dm4.deploy.dir-->
+        <dm4.deploy.dir>../climbo-ldap-deepamehta/bundle-deploy</dm4.deploy.dir>
     </properties>
-
+    
     <parent>
         <groupId>de.deepamehta</groupId>
         <artifactId>deepamehta-plugin</artifactId>
@@ -22,22 +22,63 @@
     </parent>
 
     <dependencies>
-        <dependency>
-            <groupId>de.deepamehta</groupId>
-            <artifactId>deepamehta-accesscontrol</artifactId>
-            <version>4.9.1</version>
-        </dependency>
-        
+	    <dependency>
+	    	<groupId>org.apache.directory.api</groupId>
+	    	<artifactId>api-ldap-client-api</artifactId>
+	    	<version>2.0.0.AM2</version>
+	    	<optional>true</optional>
+		</dependency>
+		
+		<dependency>
+		    <groupId>commons-lang</groupId>
+		    <artifactId>commons-lang</artifactId>
+		    <version>2.6</version>
+		</dependency>
+		
 		<dependency>
 		    <groupId>org.springframework.security</groupId>
 		    <artifactId>spring-security-crypto</artifactId>
 		    <version>5.0.7.RELEASE</version>
 		</dependency>
 
+        <dependency>
+            <groupId>de.deepamehta</groupId>
+            <artifactId>deepamehta-accesscontrol</artifactId>
+            <version>4.9.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+			
+        	<plugin>
+        		<groupId>net.orfjackal.retrolambda</groupId>
+        		<artifactId>retrolambda-maven-plugin</artifactId>
+        		<version>2.5.1</version>
+        		<executions>
+			        <execution>
+			            <phase>compile</phase>
+			            <goals>
+			                <goal>process-main</goal>
+			                <goal>process-test</goal>
+			            </goals>
+			        </execution>
+			    </executions>
+			    <configuration>
+			        <target>1.6</target>
+			        <defaultMethods>true</defaultMethods>
+			    </configuration>
+      		</plugin>
+			
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -45,9 +86,9 @@
                     <instructions>
                         <Bundle-SymbolicName>de.deepamehta.ldap</Bundle-SymbolicName>
                         <Bundle-Activator>de.deepamehta.ldap.LDAPPlugin</Bundle-Activator>
-			<Import-Package>!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
-                        <Embed-Dependency>spring-security-crypto</Embed-Dependency>
-			<Embed-Transitive>true</Embed-Transitive>
+						<Import-Package>!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
+                        <Embed-Dependency>commons-lang,spring-security-crypto</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
                     </instructions>
                 </configuration>
             </plugin>
