@@ -162,13 +162,13 @@ public class Configuration {
 					Enumeration<String> aliases = keyStore.aliases();
 					while (aliases.hasMoreElements()) {
 						count++;
-						aliases.hasMoreElements();
+						aliases.nextElement();
 					}
 					
 					if (count == 0) {
 						log.configurationError("Configured trust store does not contain any aliases. Please check the file.");
 					} else {
-						log.configurationHint("Configured trust store contains %s aliases. It appears valid for SSL/TLS connections");
+						log.configurationHint("Configured trust store contains %s aliases. It appears valid for SSL/TLS connections", count);
 					}
 					
 				} catch (KeyStoreException e) {
