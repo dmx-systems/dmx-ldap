@@ -1,4 +1,3 @@
-
 ## LDAP Authentication for DeepaMehta 4
 
 ### Configuration / Usage
@@ -16,7 +15,7 @@ dm4.ldap.password =
 dm4.ldap.user_base = 
 dm4.ldap.user_attribute = 
 dm4.ldap.user_filter = 
-dm4.ldap.logging = production
+dm4.ldap.logging = INFO
 ```
 
 Known Protocols are: 
