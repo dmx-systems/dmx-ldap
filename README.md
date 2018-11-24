@@ -26,8 +26,10 @@ Known Protocols are:
 
 Additional settings for self-signed certificates used with keystore:
 
-        <javax.net.ssl.trustStore>/path/to/keystore.jks</javax.net.ssl.trustStore>
-        <javax.net.ssl.trustStorePassword>changeit</javax.net.ssl.trustStorePassword>
+```
+javax.net.ssl.trustStore = /path/to/keystore.jks
+javax.net.ssl.trustStorePassword = changeit
+```
 
 Note: For self signed certificates, dm4.ldap.server must contain the hostname of the certificate, not the IP address.
 
