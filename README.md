@@ -15,6 +15,7 @@ dm4.ldap.password =
 dm4.ldap.user_base = 
 dm4.ldap.user_attribute = 
 dm4.ldap.user_filter = 
+dm4.ldap.user_member_group = 
 dm4.ldap.logging = INFO
 ```
 
@@ -45,15 +46,14 @@ Next Feature Release:
 * Fetch and write user profile data in LDAP System
 * Creating new user accounts in LDAP System
 
-**0.4.0** -- Upcoming
+**0.3.4** -- Nov 26, 2018
 
-Next maintenance release:
-
-* Microsoft ActiveDirectory Compatibility
 * Throw exceptions in cases of misconfiguration or any kind of error
-* Complete user and developer documentation in README
-* Info, Warning, Debug Logging
-* Relase Notes
+* User creation, including automatic placing in memberOf group)
+* Password change (SSHA passwords-only)
+* Info and Debug Log setting
+* Added many more logging locations
+* Extensive checking of configuration validity (including keystore)
 
 **0.3.0** -- Feb 27, 2018
 
