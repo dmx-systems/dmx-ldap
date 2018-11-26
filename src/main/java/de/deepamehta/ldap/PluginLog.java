@@ -4,6 +4,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 interface PluginLog {
+
+	void configurationDebug(String msg, Object... args);
 	
 	void configurationHint(String msg, Object... args);
 	
@@ -32,6 +34,11 @@ interface PluginLog {
 class ProductionLog implements PluginLog {
 	
 	Logger logger = Logger.getLogger(ProductionLog.class.getName());
+
+	@Override
+	public void configurationDebug(String msg, Object... args) {
+		// Debug messages are disabled in production log
+	}
 
 	@Override
 	public void configurationHint(String msg, Object... args) {

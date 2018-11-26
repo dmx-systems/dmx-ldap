@@ -10,6 +10,11 @@ public class TroubleShootingLog implements PluginLog {
 	private Logger logger = Logger.getLogger(TroubleShootingLog.class.getName());
 	
 	@Override
+	public void configurationDebug(String msg, Object... args) {
+		logger.log(Level.FINE, String.format(msg, args));
+	}
+	
+	@Override
 	public void configurationHint(String msg, Object... args) {
 		logger.log(Level.INFO, String.format(msg, args));
 	}
