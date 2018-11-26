@@ -206,10 +206,18 @@ public class Configuration {
 	}
 
 	String summary() {
+		String trustStore = System.getProperty("javax.net.ssl.trustStore", "");
+		String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword", "");
+		
+		// Shows trust store information when protocol is not-LDAP or a non-empty trust store is given
+		String trustStoreSummary = (protocol != ProtocolType.LDAP || StringUtils.isNotEmpty(trustStore))
+				? String.format("\ntrustStore=%s\ntrustStorePassword=%s", trustStore, StringUtils.isEmpty(trustStorePassword) ? "" : "***") 
+				: "";
+		
 		return String.format(
-				"protocol=%s\nserver=%s\nport=%s\nimplementation=%s\nlogging=%s\nuser_creation.enabled=%s\nmanager=%s\npassword=%s\nuser_base=%s\nuser_attribute=%s\nuser_acceptance_filter=%s\nuser_member_group=%s",
+				"protocol=%s\nserver=%s\nport=%s\nimplementation=%s\nlogging=%s\nuser_creation.enabled=%s\nmanager=%s\npassword=%s\nuser_base=%s\nuser_attribute=%s\nuser_acceptance_filter=%s\nuser_member_group=%s%s",
 				protocol, server, port, implementation, loggingMode, userCreationEnabled, manager, StringUtils.isEmpty(password) ? "" : "***", userBase,
-				userAttribute, userFilter, userMemberGroup);
+				userAttribute, userFilter, userMemberGroup, trustStoreSummary);
 	}
 
 	
