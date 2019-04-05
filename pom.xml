@@ -86,6 +86,7 @@
                     <instructions>
                         <Bundle-SymbolicName>de.deepamehta.ldap</Bundle-SymbolicName>
                         <Bundle-Activator>de.deepamehta.ldap.LDAPPlugin</Bundle-Activator>
+						<Export-Package>de.deepamehta.ldap.service,de.deepamehta.ldap.profile.service</Export-Package>
 						<Import-Package>!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
                         <Embed-Dependency>commons-lang,spring-security-crypto</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>

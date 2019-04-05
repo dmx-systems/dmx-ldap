@@ -1,4 +1,4 @@
-package de.deepamehta.ldap.profileservice.repository.jndi;
+package de.deepamehta.ldap.profile.repository.jndi;
 
 
 import de.deepamehta.ldap.Configuration;

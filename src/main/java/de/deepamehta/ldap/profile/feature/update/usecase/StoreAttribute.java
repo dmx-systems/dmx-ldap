@@ -1,8 +1,8 @@
-package de.deepamehta.ldap.profileservice.feature.update.usecase;
+package de.deepamehta.ldap.profile.feature.update.usecase;
 
-import de.deepamehta.ldap.profileservice.model.LdapAttribute;
-import de.deepamehta.ldap.profileservice.model.Session;
-import de.deepamehta.ldap.profileservice.repository.LdapRepository;
+import de.deepamehta.ldap.profile.model.LdapAttribute;
+import de.deepamehta.ldap.profile.model.Session;
+import de.deepamehta.ldap.profile.repository.LdapRepository;
 
 public class StoreAttribute {
 

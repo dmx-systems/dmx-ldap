@@ -1,11 +1,11 @@
-package de.deepamehta.ldap.profileservice.repository.jndi;
+package de.deepamehta.ldap.profile.repository.jndi;
 
 
 import de.deepamehta.ldap.Configuration;
 import de.deepamehta.ldap.PluginLog;
-import de.deepamehta.ldap.profileservice.model.LdapAttribute;
-import de.deepamehta.ldap.profileservice.model.Session;
-import de.deepamehta.ldap.profileservice.repository.LdapRepository;
+import de.deepamehta.ldap.profile.model.LdapAttribute;
+import de.deepamehta.ldap.profile.model.Session;
+import de.deepamehta.ldap.profile.repository.LdapRepository;
 
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;

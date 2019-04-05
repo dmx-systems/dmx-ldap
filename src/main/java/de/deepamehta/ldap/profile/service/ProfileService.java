@@ -1,6 +1,6 @@
-package de.deepamehta.ldap.profileservice.service;
+package de.deepamehta.ldap.profile.service;
 
-import de.deepamehta.ldap.profileservice.model.LdapAttribute;
+import de.deepamehta.ldap.profile.model.LdapAttribute;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface ProfileService {
 
-    public enum Attribute {
+    enum Attribute {
         NICK_NAME(LdapAttribute.DISPLAY_NAME),
         EMAIL(LdapAttribute.MAIL),
         FIRST_NAME(LdapAttribute.GIVEN_NAME),
@@ -16,13 +16,13 @@ public interface ProfileService {
         INFO(LdapAttribute.DESCRIPTION),
         PICTURE(LdapAttribute.JPEG_PHOTO);
 
-        final LdapAttribute ldapAttribute;
+        public final LdapAttribute ldapAttribute;
 
         Attribute(LdapAttribute ldapAttribute) {
             this.ldapAttribute = ldapAttribute;
         }
 
-        static Attribute findByLdapAttribute(LdapAttribute ldapAttribute) {
+        public static Attribute findByLdapAttribute(LdapAttribute ldapAttribute) {
             return Arrays.stream(values())
                     .findFirst()
                     .filter(attr -> attr.ldapAttribute == ldapAttribute)
@@ -31,12 +31,12 @@ public interface ProfileService {
     }
 
 
-    boolean update(Attribute attribute, String value);
+    boolean update(String userName, String password, Attribute attribute, String value);
 
-    boolean update(Map<Attribute, String> values);
+    boolean update(String userName, String password, Map<Attribute, String> values);
 
-    String read(Attribute attribute);
+    String read(String userName, String password, Attribute attribute);
 
-    Map<Attribute, String> read(List<Attribute> attributes);
+    Map<Attribute, String> read(String userName, String password, List<Attribute> attributes);
 
 }

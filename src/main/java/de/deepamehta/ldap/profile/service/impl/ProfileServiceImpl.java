@@ -1,17 +1,21 @@
-package de.deepamehta.ldap.profileservice.service;
+package de.deepamehta.ldap.profile.service.impl;
 
 import de.deepamehta.ldap.Configuration;
 import de.deepamehta.ldap.PluginLog;
-import de.deepamehta.ldap.profileservice.feature.common.usecase.RunOnLdap;
-import de.deepamehta.ldap.profileservice.feature.read.handler.ReadAttributesHandler;
-import de.deepamehta.ldap.profileservice.feature.read.usecase.LoadAttribute;
-import de.deepamehta.ldap.profileservice.feature.update.handler.UpdateAttributesHandler;
-import de.deepamehta.ldap.profileservice.feature.update.usecase.StoreAttribute;
-import de.deepamehta.ldap.profileservice.model.LdapAttribute;
-import de.deepamehta.ldap.profileservice.repository.LdapRepository;
-import de.deepamehta.ldap.profileservice.repository.jndi.JndiLdapRepository;
+import de.deepamehta.ldap.profile.feature.common.usecase.RunOnLdap;
+import de.deepamehta.ldap.profile.feature.read.handler.ReadAttributesHandler;
+import de.deepamehta.ldap.profile.feature.read.usecase.LoadAttribute;
+import de.deepamehta.ldap.profile.feature.update.handler.UpdateAttributesHandler;
+import de.deepamehta.ldap.profile.feature.update.usecase.StoreAttribute;
+import de.deepamehta.ldap.profile.model.LdapAttribute;
+import de.deepamehta.ldap.profile.repository.LdapRepository;
+import de.deepamehta.ldap.profile.repository.jndi.JndiLdapRepository;
+import de.deepamehta.ldap.profile.service.ProfileService;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ProfileServiceImpl implements ProfileService {
@@ -20,18 +24,9 @@ public class ProfileServiceImpl implements ProfileService {
 
     private final UpdateAttributesHandler updateAttributesHandler;
 
-    private final String userName;
-
-    private final String password;
-
     public ProfileServiceImpl(
             Configuration configuration,
-            PluginLog pluginLog,
-            String userName,
-            String password) {
-        this.userName = userName;
-        this.password = password;
-
+            PluginLog pluginLog) {
         LdapRepository ldapRepository = new JndiLdapRepository(configuration, pluginLog);
 
         RunOnLdap runOnLdap = new RunOnLdap(ldapRepository);
@@ -58,14 +53,14 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public boolean update(Attribute attribute, String value) {
+    public boolean update(String userName, String password, Attribute attribute, String value) {
         return updateAttributesHandler.invoke(userName, password, setupMap(map -> {
             map.put(attribute.ldapAttribute, value);
         }));
     }
 
     @Override
-    public boolean update(Map<Attribute, String> values) {
+    public boolean update(String userName, String password, Map<Attribute, String> values) {
         return updateAttributesHandler.invoke(userName, password, setupMap(map -> {
             for (Map.Entry<Attribute, String> entry : values.entrySet()) {
                 map.put(entry.getKey().ldapAttribute, entry.getValue());
@@ -74,7 +69,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public String read(Attribute attribute) {
+    public String read(String userName, String password, Attribute attribute) {
         return readAttributesHandler
                 .invoke(userName,
                         password,
@@ -83,7 +78,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public Map<Attribute, String> read(List<Attribute> attributes) {
+    public Map<Attribute, String> read(String userName, String password, List<Attribute> attributes) {
         return readAttributesHandler
                 .invoke(userName,
                         password,

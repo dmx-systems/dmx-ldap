@@ -1,8 +1,8 @@
-package de.deepamehta.ldap.profileservice.feature.update.handler;
+package de.deepamehta.ldap.profile.feature.update.handler;
 
-import de.deepamehta.ldap.profileservice.feature.common.usecase.RunOnLdap;
-import de.deepamehta.ldap.profileservice.feature.update.usecase.StoreAttribute;
-import de.deepamehta.ldap.profileservice.model.LdapAttribute;
+import de.deepamehta.ldap.profile.feature.common.usecase.RunOnLdap;
+import de.deepamehta.ldap.profile.feature.update.usecase.StoreAttribute;
+import de.deepamehta.ldap.profile.model.LdapAttribute;
 
 import java.util.Map;
 

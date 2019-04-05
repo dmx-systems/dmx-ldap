@@ -7,8 +7,8 @@ import de.deepamehta.core.osgi.PluginActivator;
 import de.deepamehta.core.service.Inject;
 import de.deepamehta.core.service.accesscontrol.Credentials;
 import de.deepamehta.core.storage.spi.DeepaMehtaTransaction;
-import de.deepamehta.ldap.profileservice.service.ProfileService;
-import de.deepamehta.ldap.profileservice.service.ProfileServiceImpl;
+import de.deepamehta.ldap.profile.service.ProfileService;
+import de.deepamehta.ldap.profile.service.impl.ProfileServiceImpl;
 import de.deepamehta.ldap.service.LDAPPluginService;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,9 +27,14 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     
     private LDAP ldap;
 
+    private boolean isRegistered;
+
     @Override
     public void serviceArrived(Object service) {
-        ((AccessControlService) service).registerAuthorizationMethod("LDAP", this);
+    	if (isRegistered) {
+			((AccessControlService) service).registerAuthorizationMethod("LDAP", this);
+			isRegistered = true;
+		}
     }
 
     @Override
@@ -146,8 +151,8 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     }
 
     @Override
-	public ProfileService getProfileService(Credentials credentials) {
-    	return new ProfileServiceImpl(configuration, pluginLog, credentials.username, credentials.password);
+	public ProfileService getProfileService() {
+    	return new ProfileServiceImpl(configuration, pluginLog);
 	}
 
 }

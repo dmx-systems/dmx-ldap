@@ -1,7 +1,7 @@
-package de.deepamehta.ldap.profileservice.repository;
+package de.deepamehta.ldap.profile.repository;
 
-import de.deepamehta.ldap.profileservice.model.LdapAttribute;
-import de.deepamehta.ldap.profileservice.model.Session;
+import de.deepamehta.ldap.profile.model.LdapAttribute;
+import de.deepamehta.ldap.profile.model.Session;
 
 public interface LdapRepository {
 

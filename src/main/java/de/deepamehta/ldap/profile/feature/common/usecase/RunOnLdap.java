@@ -1,7 +1,7 @@
-package de.deepamehta.ldap.profileservice.feature.common.usecase;
+package de.deepamehta.ldap.profile.feature.common.usecase;
 
-import de.deepamehta.ldap.profileservice.model.Session;
-import de.deepamehta.ldap.profileservice.repository.LdapRepository;
+import de.deepamehta.ldap.profile.model.Session;
+import de.deepamehta.ldap.profile.repository.LdapRepository;
 
 public class RunOnLdap {
 

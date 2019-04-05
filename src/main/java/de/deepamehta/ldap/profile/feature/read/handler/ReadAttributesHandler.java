@@ -1,8 +1,8 @@
-package de.deepamehta.ldap.profileservice.feature.read.handler;
+package de.deepamehta.ldap.profile.feature.read.handler;
 
-import de.deepamehta.ldap.profileservice.feature.common.usecase.RunOnLdap;
-import de.deepamehta.ldap.profileservice.feature.read.usecase.LoadAttribute;
-import de.deepamehta.ldap.profileservice.model.LdapAttribute;
+import de.deepamehta.ldap.profile.feature.common.usecase.RunOnLdap;
+import de.deepamehta.ldap.profile.feature.read.usecase.LoadAttribute;
+import de.deepamehta.ldap.profile.model.LdapAttribute;
 
 import java.util.HashMap;
 import java.util.List;

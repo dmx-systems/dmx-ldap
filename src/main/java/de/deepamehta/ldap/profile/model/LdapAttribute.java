@@ -1,4 +1,4 @@
-package de.deepamehta.ldap.profileservice.model;
+package de.deepamehta.ldap.profile.model;
 
 public enum LdapAttribute {
 
