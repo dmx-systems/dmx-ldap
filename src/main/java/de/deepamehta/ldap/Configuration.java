@@ -67,9 +67,8 @@ public class Configuration {
 	    c.protocol = ProtocolType.valueOf(System.getProperty("dm4.ldap.protocol", "ldap").toUpperCase());
 	    
 	    // jndi (default) or apache
-	    //c.implementation = ImplementationType.valueOf(System.getProperty("dm4.ldap.implementation", "jndi").toUpperCase());
-	    c.implementation = ImplementationType.JNDI;
-
+	    c.implementation = ImplementationType.valueOf(System.getProperty("dm4.ldap.implementation", "jndi").toUpperCase());
+	    
 	    // production (default) or troubleshooting
 	    c.loggingMode = LoggingMode.valueOf(System.getProperty("dm4.ldap.logging", "info").toUpperCase());
 	    
@@ -84,6 +83,14 @@ public class Configuration {
 	    c.userMemberGroup = System.getProperty("dm4.ldap.user_member_group", "");
 
 	    return c;
+	}
+	
+	static boolean isApacheLDAPAvailable() {
+		try {
+			return Class.forName("org.apache.directory.ldap.client.api.LdapConnection") != null;
+		} catch (ClassNotFoundException e) {
+			return false;
+		}
 	}
 	
 	boolean check(PluginLog log) {
@@ -112,6 +119,12 @@ public class Configuration {
 		
 		if (StringUtils.isEmpty(userFilter)) {
 			log.configurationHint("No filter expression provided. Defaulting to mere existance check.");
+		}
+		
+		if (implementation == ImplementationType.APACHE
+				&& !isApacheLDAPAvailable()) {
+			log.configurationError("Apache LDAP configured but bundle not available. Falling back to JNDI.");
+			implementation = ImplementationType.JNDI;
 		}
 		
 		if (userCreationEnabled) {
