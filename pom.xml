@@ -7,11 +7,11 @@
     <name>DeepaMehta 4 LDAP</name>
     <groupId>de.deepamehta</groupId>
     <artifactId>dm49-ldap</artifactId>
-    <version>0.3.5-SNAPSHOT</version>
+    <version>0.3.6-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <properties>
-        <dm4.deploy.dir>../climbo-ldap-deepamehta/bundle-deploy</dm4.deploy.dir>
+        <dm4.deploy.dir>../tendu-deepamehta/bundle-deploy</dm4.deploy.dir>
     </properties>
     
     <parent>

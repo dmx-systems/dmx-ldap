@@ -13,26 +13,26 @@ import org.apache.commons.lang.StringUtils;
 
 public class Configuration {
 	
-	ProtocolType protocol;
+	public ProtocolType protocol;
 	String server;
 	String port;
 	
 	ImplementationType implementation;
-	LoggingMode loggingMode;
+	public LoggingMode loggingMode;
 
 	boolean userCreationEnabled;
 	
-	String manager;
-	String password;
+	public String manager;
+	public String password;
 	
-	String userBase;
-	String userAttribute;
-	String userFilter;
+	public String userBase;
+	public String userAttribute;
+	public String userFilter;
 	String userMemberGroup;
 	
 	private String connectionUrl;
 	
-	String getConnectionUrl() {
+	public String getConnectionUrl() {
 		return connectionUrl;
 	}
 	
@@ -144,7 +144,7 @@ public class Configuration {
 		String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword", "");
 		if (protocol != ProtocolType.LDAP) {
 			if (StringUtils.isEmpty(trustStore)) {
-				log.configurationWarning("Secure connection requested but no custom SSL/TLS trust store defined. Connection negotiation may fail.");
+				log.configurationWarning("Secure connection requested but no custom SSL/TLS trust update defined. Connection negotiation may fail.");
 			} else {
 				
 				if (StringUtils.isEmpty(trustStorePassword)) {
@@ -156,7 +156,7 @@ public class Configuration {
 					
 					keyStore.load(new FileInputStream(trustStore), trustStorePassword.toCharArray());
 
-					log.configurationHint("Configured trust store %s is usable with provided password.", trustStore);
+					log.configurationHint("Configured trust update %s is usable with provided password.", trustStore);
 					
 					int count = 0;
 					Enumeration<String> aliases = keyStore.aliases();
@@ -166,27 +166,27 @@ public class Configuration {
 					}
 					
 					if (count == 0) {
-						log.configurationError("Configured trust store does not contain any aliases. Please check the file.");
+						log.configurationError("Configured trust update does not contain any aliases. Please check the file.");
 					} else {
-						log.configurationHint("Configured trust store contains %s aliases. It appears valid for SSL/TLS connections", count);
+						log.configurationHint("Configured trust update contains %s aliases. It appears valid for SSL/TLS connections", count);
 					}
 					
 				} catch (KeyStoreException e) {
-					log.configurationError("Unable to initialize default trust store. Expecting \"Java Keystore\" format: %s", e.getLocalizedMessage());
+					log.configurationError("Unable to initialize default trust update. Expecting \"Java Keystore\" format: %s", e.getLocalizedMessage());
 				} catch (NoSuchAlgorithmException e) {
-					log.configurationError("Unable to load trust store. Check whether it is in the default \"Java Keystore\" format: %s", e.getLocalizedMessage());
+					log.configurationError("Unable to read trust update. Check whether it is in the default \"Java Keystore\" format: %s", e.getLocalizedMessage());
 				} catch (CertificateException e) {
-					log.configurationError("Unable to load trust store. Issue with certificates: %s", e.getLocalizedMessage());
+					log.configurationError("Unable to read trust update. Issue with certificates: %s", e.getLocalizedMessage());
 				} catch (FileNotFoundException e) {
-					log.configurationError("Trust store configured to %s but file is not accessible: %s", trustStore, e.getLocalizedMessage());
+					log.configurationError("Trust update configured to %s but file is not accessible: %s", trustStore, e.getLocalizedMessage());
 				} catch (IOException e) {
-					log.configurationError("Trust store configured to %s but reading the file failed: %s", trustStore, e.getLocalizedMessage());
+					log.configurationError("Trust update configured to %s but reading the file failed: %s", trustStore, e.getLocalizedMessage());
 				}
 				
 			}
 		} else {
 			if (StringUtils.isNotEmpty(trustStore)) {
-				log.configurationWarning("A trust store located at %s was specified but using a non-SSL/TLS protocol. Check configuration.", trustStore);
+				log.configurationWarning("A trust update located at %s was specified but using a non-SSL/TLS protocol. Check configuration.", trustStore);
 			}
 		}
 		
@@ -209,7 +209,7 @@ public class Configuration {
 		String trustStore = System.getProperty("javax.net.ssl.trustStore", "");
 		String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword", "");
 		
-		// Shows trust store information when protocol is not-LDAP or a non-empty trust store is given
+		// Shows trust update information when protocol is not-LDAP or a non-empty trust update is given
 		String trustStoreSummary = (protocol != ProtocolType.LDAP || StringUtils.isNotEmpty(trustStore))
 				? String.format("\ntrustStore=%s\ntrustStorePassword=%s", trustStore, StringUtils.isEmpty(trustStorePassword) ? "" : "***") 
 				: "";

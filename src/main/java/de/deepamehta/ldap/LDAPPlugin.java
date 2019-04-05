@@ -1,8 +1,5 @@
 package de.deepamehta.ldap;
 
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
-
 import de.deepamehta.accesscontrol.AccessControlService;
 import de.deepamehta.accesscontrol.AuthorizationMethod;
 import de.deepamehta.core.Topic;
@@ -10,7 +7,12 @@ import de.deepamehta.core.osgi.PluginActivator;
 import de.deepamehta.core.service.Inject;
 import de.deepamehta.core.service.accesscontrol.Credentials;
 import de.deepamehta.core.storage.spi.DeepaMehtaTransaction;
+import de.deepamehta.ldap.profileservice.service.ProfileService;
+import de.deepamehta.ldap.profileservice.service.ProfileServiceImpl;
 import de.deepamehta.ldap.service.LDAPPluginService;
+
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
 
 public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService {
 
@@ -142,5 +144,10 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     	
     	return null;
     }
+
+    @Override
+	public ProfileService getProfileService(Credentials credentials) {
+    	return new ProfileServiceImpl(configuration, pluginLog, credentials.username, credentials.password);
+	}
 
 }

@@ -3,7 +3,7 @@ package de.deepamehta.ldap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-interface PluginLog {
+public interface PluginLog {
 
 	void configurationDebug(String msg, Object... args);
 	
