@@ -7,11 +7,12 @@
     <name>DeepaMehta 4 LDAP</name>
     <groupId>de.deepamehta</groupId>
     <artifactId>dm49-ldap</artifactId>
-    <version>0.3.5-SNAPSHOT</version>
+    <version>0.3.6-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <properties>
-        <dm4.deploy.dir>../climbo-ldap-deepamehta/bundle-deploy</dm4.deploy.dir>
+        <dm4.deploy.dir>../tendu-deepamehta/bundle-deploy</dm4.deploy.dir>
+		<dm.version>4.9.1</dm.version>
     </properties>
     
     <parent>
@@ -59,11 +60,19 @@
 		    <version>5.0.7.RELEASE</version>
 		</dependency>
 
-        <dependency>
-            <groupId>de.deepamehta</groupId>
-            <artifactId>deepamehta-accesscontrol</artifactId>
-            <version>4.9.1</version>
-        </dependency>
+		<dependency>
+			<groupId>de.deepamehta</groupId>
+			<artifactId>deepamehta-accesscontrol</artifactId>
+			<version>${dm.version}</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>de.deepamehta</groupId>
+			<artifactId>deepamehta-core</artifactId>
+			<version>${dm.version}</version>
+			<scope>provided</scope>
+		</dependency>
 
 		<dependency>
 		    <groupId>org.slf4j</groupId>
@@ -123,7 +132,13 @@
                         <Bundle-SymbolicName>de.deepamehta.ldap</Bundle-SymbolicName>
                         <Bundle-Activator>de.deepamehta.ldap.LDAPPlugin</Bundle-Activator>
 						<Import-Package>!org.bouncycastle*,!org.apache.commons.logging*,!antlr,!antlr.collections.impl,!net.sf.cglib.proxy,!org.apache.directory.api.ldap.extras.controls*,!org.apache.directory.api.ldap.extras.extended*,!org.apache.directory.api.ldap.extras.intermediate*,*</Import-Package>
-                        <Embed-Dependency>commons-lang,spring-security-crypto,api-ldap-client-api,api-ldap-model,api-ldap-codec-core,api-ldap-codec-standalone,api-asn1-api,api-asn1-ber,api-i18n,api-ldap-extras-codec,api-ldap-schema-data,api-util,commons-codec,commons-collections,commons-pool2,slf4j-api,slf4j-jdk14,mina-core</Embed-Dependency>
+						<Export-Package>de.deepamehta.ldap.service,de.deepamehta.ldap.profile.service</Export-Package>
+						<Import-Package>!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
+						<!-- automatically adds compile and runtime dependencies and places them in "dependencies" folder inside the jar
+	           				-->
+						<Embed-Dependency>!stax-api,*;scope=compile|runtime;inline=false</Embed-Dependency>
+						<Embed-Directory>dependencies</Embed-Directory>
+						<Embed-Dependency>commons-lang,spring-security-crypto</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
                     </instructions>
                 </configuration>

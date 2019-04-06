@@ -185,7 +185,7 @@ class JndiLDAP implements LDAP {
 		}
 	}
 	
-    boolean changePasswordImpl(
+    private boolean changePasswordImpl(
     		LdapContext ctx,
     		String userName, String password) {
     	String entryDN = String.format("%s=%s,%s", configuration.userAttribute, userName, configuration.userBase);
