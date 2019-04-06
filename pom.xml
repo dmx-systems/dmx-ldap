@@ -5,7 +5,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <name>DeepaMehta 4 LDAP</name>
-    <groupId>de.deepamehta</groupId>
     <artifactId>dm49-ldap</artifactId>
     <version>0.3.6-SNAPSHOT</version>
     <packaging>bundle</packaging>
@@ -120,9 +119,10 @@
                         <Bundle-SymbolicName>de.deepamehta.ldap</Bundle-SymbolicName>
                         <Bundle-Activator>de.deepamehta.ldap.LDAPPlugin</Bundle-Activator>
 						<Export-Package>de.deepamehta.ldap.service,de.deepamehta.ldap.profile.service</Export-Package>
-						<Import-Package>!org.relaxng.datatype*,!org.jaxen*,!org.gjt.xpp,!com.sun.msv.datatype*,!net.sf.cglib.proxy,!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
-						<!-- automatically adds compile and runtime dependencies and places them in "dependencies" folder inside the jar
-	           				-->
+						<!-- The following package exclusions might be needed if more Apache Directory deps are added.
+						 !org.relaxng.datatype*,!org.jaxen*,!org.gjt.xpp,!com.sun.msv.datatype*
+						 -->
+						<Import-Package>!net.sf.cglib.proxy,!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
 						<Embed-Dependency>!stax-api,*;scope=compile|runtime;inline=false</Embed-Dependency>
 						<Embed-Directory>dependencies</Embed-Directory>
 						<Embed-Transitive>true</Embed-Transitive>
