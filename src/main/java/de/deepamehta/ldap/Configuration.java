@@ -56,6 +56,14 @@ public class Configuration {
         // No op
     }
 
+    static boolean isApacheLDAPAvailable() {
+        try {
+            return Class.forName("org.apache.directory.ldap.client.api.LdapConnection") != null;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     //
     static Configuration createFromProperties() {
         Configuration c = new Configuration();
@@ -113,11 +121,11 @@ public class Configuration {
             log.configurationHint("No filter expression provided. Defaulting to mere existance check.");
         }
 
-	if (implementation == ImplementationType.APACHE
-			&& !isApacheLDAPAvailable()) {
-		log.configurationError("Apache LDAP configured but bundle not available. Falling back to JNDI.");
-		implementation = ImplementationType.JNDI;
-	}
+        if (implementation == ImplementationType.APACHE
+                && !isApacheLDAPAvailable()) {
+            log.configurationError("Apache LDAP configured but bundle not available. Falling back to JNDI.");
+            implementation = ImplementationType.JNDI;
+        }
 
         if (userCreationEnabled) {
             log.configurationHint("User creation enabled. LDAP entry creation and attribute modification may occur.");
@@ -225,6 +233,4 @@ public class Configuration {
                 userAttribute, userFilter, userMemberGroup, trustStoreSummary);
     }
 
-
->>>>>>> 01e668d00a7d64299ef7bceff04a850240b32946
 }
