@@ -13,41 +13,41 @@
     <properties>
         <dm4.deploy.dir>../tendu-deepamehta/bundle-deploy</dm4.deploy.dir>
 		<dm.version>4.9.1</dm.version>
+		<apache.directory.version>2.0.0.AM2</apache.directory.version>
     </properties>
     
     <parent>
         <groupId>de.deepamehta</groupId>
         <artifactId>deepamehta-plugin</artifactId>
         <version>4.9.1</version>
-        <!--relativePath>../dm4-plugin/pom.xml</relativePath-->
     </parent>
 
     <dependencies>
-	    <dependency>
+
+		<dependency>
 	    	<groupId>org.apache.directory.api</groupId>
 	    	<artifactId>api-ldap-client-api</artifactId>
-	    	<version>2.0.0.AM2</version>
+	    	<version>${apache.directory.version}</version>
 		</dependency>
 
 	    <dependency>
 	    	<groupId>org.apache.directory.api</groupId>
 	    	<artifactId>api-ldap-codec-core</artifactId>
-	    	<version>2.0.0.AM2</version>
+	    	<version>${apache.directory.version}</version>
 		</dependency>
 		
 		<dependency>
 		    <groupId>org.apache.directory.api</groupId>
 		    <artifactId>api-ldap-model</artifactId>
-		    <version>2.0.0.AM2</version>
+		    <version>${apache.directory.version}</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.apache.directory.api</groupId>
 		    <artifactId>api-ldap-codec-standalone</artifactId>
-		    <version>2.0.0.AM2</version>
-		    <scope>test</scope>
+		    <version>${apache.directory.version}</version>
 		</dependency>
-		
+
 		<dependency>
 		    <groupId>commons-lang</groupId>
 		    <artifactId>commons-lang</artifactId>
@@ -74,11 +74,11 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- explicitly provide implementation to match Apache's requirement -->
 		<dependency>
 		    <groupId>org.slf4j</groupId>
 		    <artifactId>slf4j-jdk14</artifactId>
 		    <version>1.7.25</version>
-		    <scope>test</scope>
 		</dependency>
 
     </dependencies>
@@ -112,18 +112,6 @@
 			        <defaultMethods>true</defaultMethods>
 			    </configuration>
       		</plugin>
-      		
-      		<!-- 
-
-<dependency>
-    <groupId>org.apache.directory.api</groupId>
-    <artifactId>api-ldap-schema-data</artifactId>
-    <version>2.0.0.AM2</version>
-</dependency>
-
-			-->
-			
-			
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -132,7 +120,7 @@
                         <Bundle-SymbolicName>de.deepamehta.ldap</Bundle-SymbolicName>
                         <Bundle-Activator>de.deepamehta.ldap.LDAPPlugin</Bundle-Activator>
 						<Export-Package>de.deepamehta.ldap.service,de.deepamehta.ldap.profile.service</Export-Package>
-						<Import-Package>!net.sf.cglib.proxy,!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
+						<Import-Package>!org.relaxng.datatype*,!org.jaxen*,!org.gjt.xpp,!com.sun.msv.datatype*,!net.sf.cglib.proxy,!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
 						<!-- automatically adds compile and runtime dependencies and places them in "dependencies" folder inside the jar
 	           				-->
 						<Embed-Dependency>!stax-api,*;scope=compile|runtime;inline=false</Embed-Dependency>
