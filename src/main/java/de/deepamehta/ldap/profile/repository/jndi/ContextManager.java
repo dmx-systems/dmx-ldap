@@ -27,32 +27,22 @@ class ContextManager {
 		this.pluginLog = log;
 	}
 
-	LdapContext openConnection(String username, String password) {
+	LdapContext openConnection(String username) {
 		pluginLog.actionHint("Checking credentials for user %s", username);
 		
-        LdapContext ctx = null;
         try {
         	String url = configuration.getConnectionUrl();
-            ctx = connect(url, configuration.manager, configuration.password, false);
+            LdapContext ctx = connect(url, configuration.manager, configuration.password, false);
             
             String cn = lookupUserCn(ctx, username);
             if (cn == null) {
         		pluginLog.actionHint("User %s not found in LDAP", username);
                 return null;
             }
-
-			LdapContext ctx2 = connect(url, cn, password, true);
-            
-            if (ctx2 == null) {
-                pluginLog.actionHint("Provided credentials for user %s were wrong", username);
-            }
-            
-            return ctx2;
+            return ctx;
         } catch (NamingException e) {
         	throw new RuntimeException("Checking LDAP credentials lead to exception", e);
-        } finally {
-			closeQuietly(ctx);
-		}
+        }
 	}
 
     private LdapContext connect(String serverUrl, String username, String password, boolean suppressNamingException) {

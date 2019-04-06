@@ -11,8 +11,8 @@ public class RunOnLdap {
         this.ldapRepository = ldapRepository;
     }
 
-    public void invoke(String userName, String password, LdapRunner runner) {
-        Session session = ldapRepository.openConnection(userName, password);
+    public void invoke(String userName, LdapRunner runner) {
+        Session session = ldapRepository.openConnection(userName);
 
         if (session == null) {
             throw new IllegalStateException("Unable to connect to LDAP.");
@@ -29,8 +29,8 @@ public class RunOnLdap {
         void run(Session session);
     }
 
-    public <T> T invoke(String userName, String password, LdapRunnerWithReturnValue<T> runner) {
-        Session session = ldapRepository.openConnection(userName, password);
+    public <T> T invoke(String userName, LdapRunnerWithReturnValue<T> runner) {
+        Session session = ldapRepository.openConnection(userName);
 
         if (session == null) {
             throw new IllegalStateException("Unable to connect to LDAP.");

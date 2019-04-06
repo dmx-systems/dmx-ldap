@@ -18,8 +18,8 @@ public class UpdateAttributesHandler {
         this.storeAttribute = storeAttribute;
     }
 
-    public boolean invoke(String userName, String password, Map<LdapAttribute, String> data) {
-        return runOnLdap.invoke(userName, password, (session -> {
+    public boolean invoke(String userName, Map<LdapAttribute, String> data) {
+        return runOnLdap.invoke(userName, (session -> {
 
             for (Map.Entry<LdapAttribute, String> entry : data.entrySet()) {
                 if (!storeAttribute.invoke(session, entry.getKey(), entry.getValue())) {

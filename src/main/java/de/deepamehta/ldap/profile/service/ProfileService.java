@@ -31,12 +31,12 @@ public interface ProfileService {
     }
 
 
-    boolean update(String userName, String password, Attribute attribute, String value);
+    boolean update(String userName, Attribute attribute, String value);
 
-    boolean update(String userName, String password, Map<Attribute, String> values);
+    boolean update(String userName, Map<Attribute, String> values);
 
-    String read(String userName, String password, Attribute attribute);
+    String read(String userName, Attribute attribute);
 
-    Map<Attribute, String> read(String userName, String password, List<Attribute> attributes);
+    Map<Attribute, String> read(String userName, List<Attribute> attributes);
 
 }

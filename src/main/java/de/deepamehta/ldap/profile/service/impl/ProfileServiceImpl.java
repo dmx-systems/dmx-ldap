@@ -53,15 +53,15 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public boolean update(String userName, String password, Attribute attribute, String value) {
-        return updateAttributesHandler.invoke(userName, password, setupMap(map -> {
+    public boolean update(String userName, Attribute attribute, String value) {
+        return updateAttributesHandler.invoke(userName, setupMap(map -> {
             map.put(attribute.ldapAttribute, value);
         }));
     }
 
     @Override
-    public boolean update(String userName, String password, Map<Attribute, String> values) {
-        return updateAttributesHandler.invoke(userName, password, setupMap(map -> {
+    public boolean update(String userName, Map<Attribute, String> values) {
+        return updateAttributesHandler.invoke(userName, setupMap(map -> {
             for (Map.Entry<Attribute, String> entry : values.entrySet()) {
                 map.put(entry.getKey().ldapAttribute, entry.getValue());
             }
@@ -69,19 +69,17 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
-    public String read(String userName, String password, Attribute attribute) {
+    public String read(String userName, Attribute attribute) {
         return readAttributesHandler
                 .invoke(userName,
-                        password,
                         Collections.singletonList(attribute.ldapAttribute))
                 .get(attribute.ldapAttribute);
     }
 
     @Override
-    public Map<Attribute, String> read(String userName, String password, List<Attribute> attributes) {
+    public Map<Attribute, String> read(String userName, List<Attribute> attributes) {
         return readAttributesHandler
                 .invoke(userName,
-                        password,
                         attributes.stream().map(a -> a.ldapAttribute).collect(Collectors.toList()))
                 .entrySet()
                 .stream()

@@ -11,5 +11,4 @@ public interface LDAPPluginService {
 	Topic changePassword(Credentials cred);
 
 	ProfileService getProfileService();
-	
 }

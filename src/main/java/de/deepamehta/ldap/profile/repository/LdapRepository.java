@@ -5,7 +5,7 @@ import de.deepamehta.ldap.profile.model.Session;
 
 public interface LdapRepository {
 
-    Session openConnection(String uid, String password);
+    Session openConnection(String uid);
 
     void closeConnection(Session session);
 

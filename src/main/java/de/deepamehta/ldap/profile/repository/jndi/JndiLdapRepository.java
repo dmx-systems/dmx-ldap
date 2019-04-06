@@ -7,6 +7,8 @@ import de.deepamehta.ldap.profile.model.LdapAttribute;
 import de.deepamehta.ldap.profile.model.Session;
 import de.deepamehta.ldap.profile.repository.LdapRepository;
 
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.DirContext;
 import javax.naming.directory.ModificationItem;
@@ -22,8 +24,8 @@ public class JndiLdapRepository implements LdapRepository {
     }
 
     @Override
-    public Session openConnection(String uid, String password) {
-        LdapContext result = contextManager.openConnection(uid, password);
+    public Session openConnection(String uid) {
+        LdapContext result = contextManager.openConnection(uid);
         return result != null
                 ? new JndiSession(uid, result)
                 : null;
@@ -58,10 +60,13 @@ public class JndiLdapRepository implements LdapRepository {
         String entryDN = contextManager.dnByUid(jndiSession.uid);
 
         return contextManager.load(() ->
-                jndiSession.context
+                safeToString(jndiSession.context
                         .getAttributes(entryDN, new String[]{attribute.getLdapAttributeName()})
-                        .get(attribute.getLdapAttributeName())
-                        .get().toString());
+                        .get(attribute.getLdapAttributeName())));
+    }
+
+    private static String safeToString(Attribute attribute) throws NamingException {
+        return attribute != null ? attribute.get().toString() : null;
     }
 
     private JndiSession ourSession(Session session) {

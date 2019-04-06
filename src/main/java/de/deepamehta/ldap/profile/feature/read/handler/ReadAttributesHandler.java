@@ -20,10 +20,10 @@ public class ReadAttributesHandler {
         this.loadAttribute = loadAttribute;
     }
 
-    public Map<LdapAttribute, String> invoke(String userName, String password, List<LdapAttribute> requestedAttributes) {
+    public Map<LdapAttribute, String> invoke(String userName, List<LdapAttribute> requestedAttributes) {
         HashMap<LdapAttribute, String> resultMap = new HashMap<>();
 
-        runOnLdap.invoke(userName, password, (session -> {
+        runOnLdap.invoke(userName, (session -> {
 
             for (LdapAttribute attribute : requestedAttributes) {
                 String value = loadAttribute.invoke(session, attribute);
