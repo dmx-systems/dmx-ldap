@@ -7,12 +7,8 @@
     <name>DMX LDAP</name>
     <groupId>systems.dmx</groupId>
     <artifactId>dmx-ldap</artifactId>
-    <version>0.3.4</version>
+    <version>0.3.5-SNAPSHOT</version>
     <packaging>bundle</packaging>
-
-    <!--properties>
-        <dmx.deploy.dir>../climbo-ldap-deepamehta/bundle-deploy</dmx.deploy.dir>
-    </properties-->
 
     <parent>
         <groupId>systems.dmx</groupId>
@@ -54,7 +50,6 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-			
             <plugin>
                 <groupId>net.orfjackal.retrolambda</groupId>
                 <artifactId>retrolambda-maven-plugin</artifactId>
@@ -73,7 +68,6 @@
                     <defaultMethods>true</defaultMethods>
                 </configuration>
             </plugin>
-			
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>

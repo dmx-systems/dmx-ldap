@@ -59,30 +59,24 @@ public class Configuration {
     //
     static Configuration createFromProperties() {
         Configuration c = new Configuration();
-
+        // 1) Providing default configuration
         c.server = System.getProperty("dmx.ldap.server", "127.0.0.1");
-        c.port = System.getProperty("dmx.ldap.port");
-
         // ldap (default), ldaps and starttls
         c.protocol = ProtocolType.valueOf(System.getProperty("dmx.ldap.protocol", "ldap").toUpperCase());
-
-        // jndi (default) or apache
-        //c.implementation = ImplementationType.valueOf(System.getProperty("dmx.ldap.implementation", "jndi").toUpperCase());
-        c.implementation = ImplementationType.JNDI;
-
+        c.port = System.getProperty("dmx.ldap.port", "389");
         // production (default) or troubleshooting
         c.loggingMode = LoggingMode.valueOf(System.getProperty("dmx.ldap.logging", "info").toUpperCase());
-
         c.userCreationEnabled = System.getProperty("dmx.ldap.user_creation.enabled", "false").equals("true");
-
+        // jndi (default) or apache
+        // c.implementation = ImplementationType.valueOf(System.getProperty("dmx.ldap.implementation", "jndi").toUpperCase());
+        c.implementation = ImplementationType.JNDI;
+        // 2) ### FIXME: no config defaults provided
         c.manager = System.getProperty("dmx.ldap.manager", "");
         c.password = System.getProperty("dmx.ldap.password", "");
-
         c.userBase = System.getProperty("dmx.ldap.user_base", "");
         c.userAttribute = System.getProperty("dmx.ldap.user_attribute", "");
         c.userFilter = System.getProperty("dmx.ldap.user_filter", "");
         c.userMemberGroup = System.getProperty("dmx.ldap.user_member_group", "");
-
         return c;
     }
 

@@ -1,4 +1,4 @@
-## LDAP Authentication for DeepaMehta 4
+## LDAP Authentication for DMX
 
 ### Configuration / Usage
 
@@ -7,16 +7,16 @@ In `config.properties` operatores have the following properties to configure:
 #### LDAP Protocol without encryption
 
 ```
-dm4.ldap.protocol = LDAP
-dm4.ldap.server = 127.0.0.1
-dm4.ldap.port = 
-dm4.ldap.manager = 
-dm4.ldap.password = 
-dm4.ldap.user_base = 
-dm4.ldap.user_attribute = 
-dm4.ldap.user_filter = 
-dm4.ldap.user_member_group = 
-dm4.ldap.logging = INFO
+dmx.ldap.protocol = LDAP
+dmx.ldap.server = 127.0.0.1
+dmx.ldap.port = 
+dmx.ldap.manager = 
+dmx.ldap.password = 
+dmx.ldap.user_base = 
+dmx.ldap.user_attribute = 
+dmx.ldap.user_filter = 
+dmx.ldap.user_member_group = 
+dmx.ldap.logging = INFO
 ```
 
 Known Protocols are: 
@@ -45,6 +45,10 @@ Next Feature Release:
 
 * Fetch and write user profile data in LDAP System
 * Creating new user accounts in LDAP System
+
+**0.3.5** -- Upcoming
+
+* Source code compatible with DMX
 
 **0.3.4** -- Nov 26, 2018
 

@@ -42,19 +42,13 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         } catch (Exception e) {
             throw new RuntimeException("Error parsing configuration", e);
         }
-
         pluginLog = PluginLog.newInstance(configuration.loggingMode);
-
         pluginLog.configurationHint("Plugin configuration:\n%s", configuration.summary());
-
         if (!configuration.check(pluginLog)) {
             throw new RuntimeException("LDAP Plugin configuration is not correct. Please fix the issues mentioned in the log.");
         }
-
         configuration.compile();
-
         ldap = LDAP.newInstance(configuration, pluginLog);
-
     }
 
     @Override
