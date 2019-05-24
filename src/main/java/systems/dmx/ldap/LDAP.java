@@ -1,4 +1,4 @@
-package de.deepamehta.ldap;
+package systems.dmx.ldap;
 
 interface LDAP {
 	

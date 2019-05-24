@@ -1,4 +1,4 @@
-package de.deepamehta.ldap;
+package systems.dmx.ldap;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -60,28 +60,28 @@ public class Configuration {
 	static Configuration createFromProperties() {
 		Configuration c = new Configuration();
 		
-		c.server = System.getProperty("dm4.ldap.server", "127.0.0.1");
-	    c.port = System.getProperty("dm4.ldap.port");
+		c.server = System.getProperty("dmx.ldap.server", "127.0.0.1");
+	    c.port = System.getProperty("dmx.ldap.port");
 
 	    // ldap (default), ldaps and starttls
-	    c.protocol = ProtocolType.valueOf(System.getProperty("dm4.ldap.protocol", "ldap").toUpperCase());
+	    c.protocol = ProtocolType.valueOf(System.getProperty("dmx.ldap.protocol", "ldap").toUpperCase());
 	    
 	    // jndi (default) or apache
-	    //c.implementation = ImplementationType.valueOf(System.getProperty("dm4.ldap.implementation", "jndi").toUpperCase());
+	    //c.implementation = ImplementationType.valueOf(System.getProperty("dmx.ldap.implementation", "jndi").toUpperCase());
 	    c.implementation = ImplementationType.JNDI;
 
 	    // production (default) or troubleshooting
-	    c.loggingMode = LoggingMode.valueOf(System.getProperty("dm4.ldap.logging", "info").toUpperCase());
+	    c.loggingMode = LoggingMode.valueOf(System.getProperty("dmx.ldap.logging", "info").toUpperCase());
 	    
-	    c.userCreationEnabled = System.getProperty("dm4.ldap.user_creation.enabled", "false").equals("true");
+	    c.userCreationEnabled = System.getProperty("dmx.ldap.user_creation.enabled", "false").equals("true");
 	  
-	    c.manager = System.getProperty("dm4.ldap.manager", "");
-	    c.password = System.getProperty("dm4.ldap.password", "");
+	    c.manager = System.getProperty("dmx.ldap.manager", "");
+	    c.password = System.getProperty("dmx.ldap.password", "");
 
-	    c.userBase = System.getProperty("dm4.ldap.user_base", "");
-	    c.userAttribute = System.getProperty("dm4.ldap.user_attribute", "");
-	    c.userFilter = System.getProperty("dm4.ldap.user_filter", "");
-	    c.userMemberGroup = System.getProperty("dm4.ldap.user_member_group", "");
+	    c.userBase = System.getProperty("dmx.ldap.user_base", "");
+	    c.userAttribute = System.getProperty("dmx.ldap.user_attribute", "");
+	    c.userFilter = System.getProperty("dmx.ldap.user_filter", "");
+	    c.userMemberGroup = System.getProperty("dmx.ldap.user_member_group", "");
 
 	    return c;
 	}

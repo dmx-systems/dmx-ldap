@@ -1,7 +1,7 @@
-package de.deepamehta.ldap.service;
+package systems.dmx.ldap.service;
 
-import de.deepamehta.core.Topic;
-import de.deepamehta.core.service.accesscontrol.Credentials;
+import systems.dmx.core.Topic;
+import systems.dmx.core.service.accesscontrol.Credentials;
 
 public interface LDAPPluginService {
 

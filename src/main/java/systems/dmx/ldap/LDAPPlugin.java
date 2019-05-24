@@ -1,16 +1,16 @@
-package de.deepamehta.ldap;
+package systems.dmx.ldap;
 
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
-import de.deepamehta.accesscontrol.AccessControlService;
-import de.deepamehta.accesscontrol.AuthorizationMethod;
-import de.deepamehta.core.Topic;
-import de.deepamehta.core.osgi.PluginActivator;
-import de.deepamehta.core.service.Inject;
-import de.deepamehta.core.service.accesscontrol.Credentials;
-import de.deepamehta.core.storage.spi.DeepaMehtaTransaction;
-import de.deepamehta.ldap.service.LDAPPluginService;
+import systems.dmx.accesscontrol.AccessControlService;
+import systems.dmx.accesscontrol.AuthorizationMethod;
+import systems.dmx.core.Topic;
+import systems.dmx.core.osgi.PluginActivator;
+import systems.dmx.core.service.Inject;
+import systems.dmx.core.service.accesscontrol.Credentials;
+import systems.dmx.core.storage.spi.DMXTransaction;
+import systems.dmx.ldap.service.LDAPPluginService;
 
 public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService {
 
@@ -111,7 +111,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         if (usernameTopic != null) {
             return usernameTopic;
         } else {
-            DeepaMehtaTransaction tx = dm4.beginTx();
+            DMXTransaction tx = dmx.beginTx();
             try {
             	usernameTopic = acs.createUsername(username);
                 tx.success();
