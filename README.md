@@ -9,7 +9,7 @@ In `config.properties` operatores have the following properties to configure:
 ```
 dmx.ldap.protocol = LDAP
 dmx.ldap.server = 127.0.0.1
-dmx.ldap.port = 
+dmx.ldap.port = 389  
 dmx.ldap.manager = 
 dmx.ldap.password = 
 dmx.ldap.user_base = 
