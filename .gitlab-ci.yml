@@ -17,6 +17,7 @@ copy-to-download:
     - JARFILE="$( basename $( ls target/*.jar | tail -n1) )"
     - if [ ! -d  ${CIDIR}/${CI_PROJECT_NAME} ]; then mkdir ${CIDIR}/${CI_PROJECT_NAME}; fi
     - cp target/${JARFILE} ${CIDIR}/${CI_PROJECT_NAME}/
+    - ln -sf  ${CIDIR}/${CI_PROJECT_NAME}/${JARFILE} ${CIDIR}/${CI_PROJECT_NAME}/${CI_PROJECT_NAME}-latest.jar
   dependencies:
     - maven-build
   only:
