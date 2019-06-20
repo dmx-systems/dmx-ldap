@@ -80,6 +80,23 @@ public class Configuration {
         return c;
     }
 
+    static Configuration createFallback() {
+        Configuration c = new Configuration();
+        c.server = "127.0.0.1";
+        c.protocol = ProtocolType.LDAP;
+        c.port = "389";
+        c.loggingMode = LoggingMode.DEBUG;
+        c.implementation = ImplementationType.JNDI;
+        c.manager = "";
+        c.password = "";
+        c.userBase = "";
+        c.userAttribute = "";
+        c.userFilter = "";
+        c.userMemberGroup = "";
+
+        return c;
+    }
+
     boolean check(PluginLog log) {
         int errorCount = 0;
 
