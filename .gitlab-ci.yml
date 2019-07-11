@@ -14,10 +14,13 @@ copy-to-download:
   stage: deploy
   script:
     - CIDIR='/var/www/download.dmx.systems/ci'
+    - DESTDIR="${CIDIR}/${CI_PROJECT_NAME}"
     - JARFILE="$( basename $( ls target/*.jar | tail -n1) )"
-    - if [ ! -d  ${CIDIR}/${CI_PROJECT_NAME} ]; then mkdir ${CIDIR}/${CI_PROJECT_NAME}; fi
-    - cp target/${JARFILE} ${CIDIR}/${CI_PROJECT_NAME}/
-    - ln -sf  ${CIDIR}/${CI_PROJECT_NAME}/${JARFILE} ${CIDIR}/${CI_PROJECT_NAME}/${CI_PROJECT_NAME}-latest.jar
+    - NUNC="$( date +%F )"
+    - DESTJARFILE="$( echo ${JARFILE} | cut -d'.' -f1 )_${NUNC}_${CI_PIPELINE_ID}"
+    - if [ ! -d  ${DESTDIR} ]; then mkdir ${DESTDIR}; fi
+    - cp target/${JARFILE} ${DESTDIR}/${DEST_JARFILE}
+    - ln -sf  ${DESTDIR}/${JARFILE} ${CIDIR}/${DESTDIR}/${CI_PROJECT_NAME}-latest.jar
   dependencies:
     - maven-build
   only:
