@@ -19,8 +19,8 @@ copy-to-download:
     - NUNC="$( date +%F )"
     - DESTJARFILE="$( basename ${JARFILE} .jar )_${NUNC}_${CI_PIPELINE_ID}.jar"
     - if [ ! -d  ${DESTDIR} ]; then mkdir ${DESTDIR}; fi
-    - cp target/${JARFILE} ${DESTDIR}/${DEST_JARFILE}
-    - ln -sf  ${DESTDIR}/${JARFILE} ${DESTDIR}/${CI_PROJECT_NAME}-latest.jar
+    - cp target/${JARFILE} ${DESTDIR}/${DESTJARFILE}
+    - ln -sf  ${DESTDIR}/${DESTJARFILE} ${DESTDIR}/${CI_PROJECT_NAME}-latest.jar
   dependencies:
     - maven-build
   only:
