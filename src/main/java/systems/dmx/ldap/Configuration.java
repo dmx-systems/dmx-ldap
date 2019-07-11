@@ -103,43 +103,43 @@ public class Configuration {
         log.configurationHint("Logging is set up for %s environment.", loggingMode.toString().toLowerCase());
 
         if (StringUtils.isEmpty(manager)) {
-            log.configurationError("No manager account provided.");
+            log.configurationError("No manager account provided. Check property 'dmx.ldap.manager'!");
             errorCount++;
         }
 
         if (StringUtils.isEmpty(password)) {
-            log.configurationWarning("No manager password provided.");
+            log.configurationWarning("No manager password provided. Check property 'dmx.ldap.password'!");
         }
 
         if (StringUtils.isEmpty(userBase)) {
-            log.configurationError("No user base provided.");
+            log.configurationError("No user base provided. Check property 'dmx.ldap.user_base'!");
             errorCount++;
         }
 
         if (StringUtils.isEmpty(userAttribute)) {
-            log.configurationHint("User attribute not set. Defaults to 'uid'.");
+            log.configurationHint("User attribute not set. Defaults to 'uid'. Check property 'dmx.ldap.user_attribute' to customize!");
             userAttribute = "uid";
         }
 
         if (StringUtils.isEmpty(userFilter)) {
-            log.configurationHint("No filter expression provided. Defaulting to mere existance check.");
+            log.configurationHint("No filter expression provided. Defaulting to mere existance check. Check property 'dmx.ldap.user_filter' to customize!");
         }
 
         if (userCreationEnabled) {
             log.configurationHint("User creation enabled. LDAP entry creation and attribute modification may occur.");
 
             if (StringUtils.isEmpty(userMemberGroup)) {
-                log.configurationHint("No member group provided. Automatically adding inetOrgPerson entries to groups is disabled.");
+                log.configurationHint("No member group provided. Automatically adding inetOrgPerson entries to groups is disabled. Check property 'dmx.ldap.user_member_group' to customize!");
 
                 if (StringUtils.isNotEmpty(userFilter)) {
-                    log.configurationWarning("Custom filter expression provided but no member group for new users. This might lead to new users not being able to log-in.");
+                    log.configurationWarning("Custom filter expression provided but no member group for new users. This might lead to new users not being able to log-in. Check property 'dmx.ldap.user_member_group'!");
                 }
 
             } else {
                 log.configurationHint("Automatically adding inetOrgPerson entries to groups is enabled.");
 
                 if (StringUtils.isEmpty(userFilter)) {
-                    log.configurationWarning("Member group defined but no filter expression. As such group membership is not checked during log-in.");
+                    log.configurationWarning("Member group defined but no filter expression. As such group membership is not checked during log-in. Check property 'dmx.ldap.user_filter'!");
                 }
 
             }
@@ -155,11 +155,11 @@ public class Configuration {
         String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword", "");
         if (protocol != ProtocolType.LDAP) {
             if (StringUtils.isEmpty(trustStore)) {
-                log.configurationWarning("Secure connection requested but no custom SSL/TLS trust store defined. Connection negotiation may fail.");
+                log.configurationWarning("Secure connection requested but no custom SSL/TLS trust store defined. Connection negotiation may fail. Check system property 'javax.net.ssl.trustStore' and 'javax.net.ssl.trustStorePassword'!");
             } else {
 
                 if (StringUtils.isEmpty(trustStorePassword)) {
-                    log.configurationWarning("Custom keystore was configured but password is empty. Opening the keystore and accessing its content may fail.");
+                    log.configurationWarning("Custom keystore was configured but password is empty. Opening the keystore and accessing its content may fail. Check system property 'javax.net.ssl.trustStorePassword'!");
                 }
 
                 try {
@@ -189,9 +189,9 @@ public class Configuration {
                 } catch (CertificateException e) {
                     log.configurationError("Unable to load trust store. Issue with certificates: %s", e.getLocalizedMessage());
                 } catch (FileNotFoundException e) {
-                    log.configurationError("Trust store configured to %s but file is not accessible: %s", trustStore, e.getLocalizedMessage());
+                    log.configurationError("Trust store configured to %s but file is not accessible: %s. Check system property 'javax.net.ssl.trustStore' and 'javax.net.ssl.trustStorePassword'!", trustStore, e.getLocalizedMessage());
                 } catch (IOException e) {
-                    log.configurationError("Trust store configured to %s but reading the file failed: %s", trustStore, e.getLocalizedMessage());
+                    log.configurationError("Trust store configured to %s but reading the file failed: %s. Check system property 'javax.net.ssl.trustStore' and 'javax.net.ssl.trustStorePassword'!", trustStore, e.getLocalizedMessage());
                 }
 
             }
