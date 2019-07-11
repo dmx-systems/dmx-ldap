@@ -20,7 +20,7 @@ copy-to-download:
     - DESTJARFILE="$( echo ${JARFILE} | cut -d'.' -f1 )_${NUNC}_${CI_PIPELINE_ID}"
     - if [ ! -d  ${DESTDIR} ]; then mkdir ${DESTDIR}; fi
     - cp target/${JARFILE} ${DESTDIR}/${DEST_JARFILE}
-    - ln -sf  ${DESTDIR}/${JARFILE} ${CIDIR}/${DESTDIR}/${CI_PROJECT_NAME}-latest.jar
+    - ln -sf  ${DESTDIR}/${JARFILE} ${DESTDIR}/${CI_PROJECT_NAME}-latest.jar
   dependencies:
     - maven-build
   only:
