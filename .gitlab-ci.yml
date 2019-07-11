@@ -17,7 +17,7 @@ copy-to-download:
     - DESTDIR="${CIDIR}/${CI_PROJECT_NAME}"
     - JARFILE="$( basename $( ls target/*.jar | tail -n1) )"
     - NUNC="$( date +%F )"
-    - DESTJARFILE="$( echo ${JARFILE} | cut -d'.' -f1 )_${NUNC}_${CI_PIPELINE_ID}"
+    - DESTJARFILE="$( basename ${JARFILE} .jar )_${NUNC}_${CI_PIPELINE_ID}"
     - if [ ! -d  ${DESTDIR} ]; then mkdir ${DESTDIR}; fi
     - cp target/${JARFILE} ${DESTDIR}/${DEST_JARFILE}
     - ln -sf  ${DESTDIR}/${JARFILE} ${DESTDIR}/${CI_PROJECT_NAME}-latest.jar
