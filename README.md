@@ -32,7 +32,7 @@ javax.net.ssl.trustStore = /path/to/keystore.jks
 javax.net.ssl.trustStorePassword = changeit
 ```
 
-Note: For self signed certificates, dm4.ldap.server must contain the hostname of the certificate, not the IP address.
+Note: For self signed certificates, dmx.ldap.server must contain the hostname of the certificate, not the IP address.
 
 Known logging values are:
  
@@ -46,9 +46,11 @@ Next Feature Release:
 * Fetch and write user profile data in LDAP System
 * Creating new user accounts in LDAP System
 
-**0.3.5** -- Upcoming
+**0.4.0** -- Apr 11, 2019
 
 * Source code compatible with DMX
+* Log messages contain configuration keys
+* Fixed plugin crashing when no or no valid configuration given
 
 **0.3.4** -- Nov 26, 2018
 
