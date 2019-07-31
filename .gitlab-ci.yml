@@ -9,8 +9,8 @@ maven-build:
       - target/*.jar
     name: ${CI_PROJECT_NAME}-${CI_COMMIT_SHORT_SHA}
 
-# 2) Copies SNAPSHOT builds on 'master' branch into download.dmx.systems/ci/ directory
-copy-to-download:
+# 2) Copies SNAPSHOT builds on 'master' and 'dm4' branch into download.dmx.systems/ci/ directory
+copy-to-ci:
   stage: deploy
   script:
     - CIDIR='/var/www/download.dmx.systems/ci'
@@ -25,3 +25,21 @@ copy-to-download:
     - maven-build
   only:
     - master
+    - dm4
+
+# 3) Copies tagged RELEASE builds into download.dmx.systems/plugins/ directory
+copy-to-release:
+  stage: deploy
+  script:
+    - RELEASEDIR='/var/www/download.dmx.systems/plugins'
+    - DESTDIR="${RELEASEDIR}/${CI_PROJECT_NAME}"
+    - JARFILE="$( basename $( ls target/*.jar | tail -n1) )"
+    - NUNC="$( date +%F )"
+    - DESTJARFILE="$( basename ${JARFILE} .jar )_${NUNC}_${CI_PIPELINE_ID}.jar"
+    - if [ ! -d  ${DESTDIR} ]; then mkdir ${DESTDIR}; fi
+    - cp target/${JARFILE} ${DESTDIR}/${DESTJARFILE}
+    # - ln -sf  ${DESTDIR}/${DESTJARFILE} ${DESTDIR}/${CI_PROJECT_NAME}-latest.jar
+  dependencies:
+    - maven-build
+  only:
+    - tags
