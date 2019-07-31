@@ -38,7 +38,6 @@ copy-to-release:
     - DESTJARFILE="$( basename ${JARFILE} )"
     - if [ ! -d  ${DESTDIR} ]; then mkdir ${DESTDIR}; fi
     - cp target/${JARFILE} ${DESTDIR}/${DESTJARFILE}
-    # - ln -sf  ${DESTDIR}/${DESTJARFILE} ${DESTDIR}/${CI_PROJECT_NAME}-latest.jar
   dependencies:
     - maven-build
   only:
