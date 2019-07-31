@@ -34,10 +34,8 @@ copy-to-release:
     - RELEASEDIR='/var/www/download.dmx.systems/plugins'
     - DESTDIR="${RELEASEDIR}/${CI_PROJECT_NAME}"
     - JARFILE="$( basename $( ls target/*.jar | tail -n1) )"
-    - NUNC="$( date +%F )"
-    - DESTJARFILE="$( basename ${JARFILE} )"
     - if [ ! -d  ${DESTDIR} ]; then mkdir ${DESTDIR}; fi
-    - cp target/${JARFILE} ${DESTDIR}/${DESTJARFILE}
+    - cp target/${JARFILE} ${DESTDIR}/
   dependencies:
     - maven-build
   only:
