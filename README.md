@@ -26,9 +26,8 @@ Known Protocols are:
 - LDAP (ldap://HOST:389) - default port is 389
 
 Additional settings for self-signed certificates used with keystore:
-
-```
-javax.net.ssl.trustStore = /path/to/keystore.jks
+javax.net.ssl.trustStore = /path/to/keystore.jksffero General Public License, version 3.
+All third party components incorporated into the DMX Tableview Software are licensed under the original license provided by the owner of the applicable component.
 javax.net.ssl.trustStorePassword = changeit
 ```
 
@@ -38,4 +37,19 @@ Known logging values are:
  
 - INFO (default): Only warnings and errors are logged including possible misconfigurations.
 - DEBUG: Hints, warning and errors are extensively logged during configuration and runtime phase.
+
+## Licensing
+
+DMX LDAP is available freely under the GNU Affero General Public License, version 3.
+All third party components incorporated into the DMX LDAP Software are licensed under the original license provided by the owner of the applicable component.
+
+## Release History
+
+**0.5.1** -- Upcoming
+
+* Compatible with DMX 5.0-beta-6
+
+## Copyright
+
+Copyright (C) 2018-2019 DMX Systems
 
