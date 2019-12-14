@@ -29,9 +29,10 @@ Additional settings for self-signed certificates used with keystore:
 javax.net.ssl.trustStore = /path/to/keystore.jksffero General Public License, version 3.
 All third party components incorporated into the DMX Tableview Software are licensed under the original license provided by the owner of the applicable component.
 javax.net.ssl.trustStorePassword = changeit
-```
 
+```
 Note: For self signed certificates, dmx.ldap.server must contain the hostname of the certificate, not the IP address.
+```
 
 Known logging values are:
  
