@@ -41,13 +41,14 @@ Known logging values are:
 
 ## Licensing
 
-DMX LDAP is available freely under the GNU Affero General Public License, version 3.
-All third party components incorporated into the DMX LDAP Software are licensed under the original license provided by the owner of the applicable component.
+DMX LDAP is available freely under the GNU Affero General Public License, version 3.<br/>
+
+All third party components incorporated into the DMX LDAP Software are licensed under the original license provided by the owner of the applicable component.<br/>
 Spring Security Crypto 5.0.7, Apache API LDAP Client API 2.0.0.AM2, and Commons Lang 2.6 are all Apache-2.0 licensed.
 
 ## Release History
 
-**0.5.1** -- Upcoming
+**0.5.1** -- Dec 15, 2019
 
 * Compatible with DMX 5.0-beta-6
 
