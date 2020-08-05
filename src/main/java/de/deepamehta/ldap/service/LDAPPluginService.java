@@ -10,5 +10,7 @@ public interface LDAPPluginService {
 
 	Topic changePassword(Credentials cred);
 
+	boolean deleteUser(Credentials cred);
+
 	ProfileService getProfileService();
 }

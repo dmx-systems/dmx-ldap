@@ -147,6 +147,28 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     }
 
     @Override
+    public boolean deleteUser(Credentials cred) {
+        if (!configuration.userCreationEnabled) {
+            pluginLog.actionWarning("Cannot delete user because user creation is disabled in plugin configuration!", null);
+
+            return false;
+        }
+
+        Topic usernameTopic = acs.getUsernameTopic(cred.username);
+        if (usernameTopic != null) {
+            if (ldap.deleteUser(cred.username, cred.password)) {
+                pluginLog.actionHint("Succesfully deleted user %s in LDAP", cred.username);
+
+                usernameTopic.delete();
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @Override
     public ProfileService getProfileService() {
         ProfileService profileService = new ProfileServiceImpl(configuration, pluginLog);
 

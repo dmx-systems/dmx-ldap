@@ -204,7 +204,38 @@ class JndiLDAP implements LDAP {
     	return true;
     }
 
-    private LdapContext connect() {
+	@Override
+	public boolean deleteUser(String user, String password) {
+		pluginLog.actionHint("Changing password for user %s", user);
+
+		LdapContext ctx = null;
+
+		try {
+			ctx = connect();
+
+			return deleteUserImpl(ctx, user);
+		} finally {
+			closeQuietly(ctx);
+		}
+	}
+
+	private boolean deleteUserImpl(
+			LdapContext ctx,
+			String userName) {
+		String entryDN = String.format("%s=%s,%s", configuration.userAttribute, userName, configuration.userBase);
+
+		try {
+			ctx.unbind(entryDN);
+		} catch (NamingException ne) {
+			pluginLog.actionWarning("Attempt to delete user entry lead to exception", ne);
+
+			return false;
+		}
+
+		return true;
+	}
+
+	private LdapContext connect() {
     	return connect(configuration.getConnectionUrl(), configuration.manager, configuration.password, false);
     }
 

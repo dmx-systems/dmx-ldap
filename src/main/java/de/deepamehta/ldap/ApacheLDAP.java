@@ -147,5 +147,20 @@ class ApacheLDAP implements LDAP {
         return false;
     }
 
+    @Override
+    public boolean deleteUser(String user, String password) {
+        AtomicBoolean result = new AtomicBoolean(false);
+        String userDN = String.format("%s=%s,%s", configuration.userAttribute, user, configuration.userBase);
 
+        whenBound(userDN, password, connection -> {
+            try {
+                connection.delete(userDN);
+                result.set(true);
+            } catch (LdapException e) {
+                pluginLog.actionWarning("Attempt to delete user entry lead to exception", e);
+            }
+        });
+
+        return result.get();
+    }
 }
