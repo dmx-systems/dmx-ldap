@@ -32,8 +32,9 @@ copy-to-release:
   stage: deploy
   script:
     - RELEASEDIR='/var/www/download.dmx.systems/plugins'
-    - DESTDIR="${RELEASEDIR}/${CI_PROJECT_NAME}"
     - JARFILE="$( basename $( ls target/*.jar | tail -n1) )"
+    - if [ $( echo "${JARFILE}" | grep dm4 ) ]; then CI_PROJECT_NAME="$(echo ${CI_PROJECT_NAME} | sed 's/dmx/dm4/g' )"; fi
+    - DESTDIR="${RELEASEDIR}/${CI_PROJECT_NAME}"
     - if [ ! -d  ${DESTDIR} ]; then mkdir ${DESTDIR}; fi
     - cp target/${JARFILE} ${DESTDIR}/
   dependencies:
