@@ -6,7 +6,7 @@
 
     <name>DeepaMehta 4 LDAP</name>
     <artifactId>dm49-ldap</artifactId>
-    <version>0.3.7</version>
+    <version>0.3.8-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <properties>
