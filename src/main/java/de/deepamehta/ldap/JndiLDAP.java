@@ -208,15 +208,20 @@ class JndiLDAP implements LDAP {
 	public boolean deleteUser(String user, String password) {
 		pluginLog.actionHint("Changing password for user %s", user);
 
-		LdapContext ctx = null;
+		if (checkCredentials(user, password)) {
+			LdapContext ctx = null;
 
-		try {
-			ctx = connect();
+			try {
+				ctx = connect();
 
-			return deleteUserImpl(ctx, user);
-		} finally {
-			closeQuietly(ctx);
+				return deleteUserImpl(ctx, user);
+			} finally {
+				closeQuietly(ctx);
+			}
+		} else {
+			return false;
 		}
+
 	}
 
 	private boolean deleteUserImpl(
