@@ -46,6 +46,11 @@ Next Feature Release:
 * Fetch and write user profile data in LDAP System
 * Creating new user accounts in LDAP System
 
+**0.3.7** -- Sep 8, 2020
+
+* DM4-only
+* Check credentials before deletion
+
 **0.3.6** -- Aug 5, 2020
 
 * DM4-only
