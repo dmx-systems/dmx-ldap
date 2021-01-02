@@ -48,6 +48,10 @@ Spring Security Crypto 5.0.7, Apache API LDAP Client API 2.0.0.AM2, and Commons 
 
 ## Release History
 
+**0.5.2.** -- Jan 02, 2021
+
+* Compatible with DMX 5.1
+
 **0.5.1** -- Dec 15, 2019
 
 * Compatible with DMX 5.0-beta-6
