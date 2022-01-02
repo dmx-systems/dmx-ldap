@@ -3,7 +3,7 @@ maven-build:
   stage: build
   script:
     - export MAVEN_OPTS='-Xmx128m'
-    - mvn clean package
+    - mvn clean install
   artifacts:
     paths:
       - target/*.jar
