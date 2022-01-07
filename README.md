@@ -17,7 +17,13 @@ dmx.ldap.user_attribute =
 dmx.ldap.user_filter = 
 dmx.ldap.user_member_group = 
 dmx.ldap.logging = INFO
+dmx.ldap.user_creation.enabled = false
 ```
+
+User creation:
+The plugin is able to create new entries in the LDAP through a plugin method. However this critical functionality is
+only available if the property dmx.ldap.user_creation.enabled is set to true and the given manager account has write
+privilege in the LDAP.
 
 Known Protocols are: 
 
