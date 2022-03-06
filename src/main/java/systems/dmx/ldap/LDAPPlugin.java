@@ -137,7 +137,9 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
 
         Topic usernameTopic = acs.getUsernameTopic(cred.username);
         if (usernameTopic != null) {
-            if (ldap.changePassword(cred.username, cred.password)) {
+            // Note: Why does this uses .password instead of .plaintextPassword (cf. createUser)
+            // Changed cred.password -> cred.plaintextPassword (07.03.2022)
+            if (ldap.changePassword(cred.username, cred.plaintextPassword)) {
                 pluginLog.actionHint("Succesfully changed password for %s", cred.username);
 
                 return usernameTopic;
