@@ -34,6 +34,13 @@ class JndiLDAP implements LDAP {
         this.pluginLog = log;
     }
 
+    /**
+     * Ceates a new user in LDAP-connected service and encodes and hashes the
+     * given plaintext password for the user.
+     * @param username String with username
+     * @param password String with password in plaintext (not encoded). 
+     * @return 
+     */
     @Override
     public boolean createUser(String username, String password, JndiLDAP.CompletableAction actionOnSuccess) {
         LdapContext ctx = null;
@@ -166,6 +173,13 @@ class JndiLDAP implements LDAP {
         }
     }
 
+    /**
+     * Encodes and hashes the given plaintext password and issues a "userPassword" 
+     * attribute replacement call for the given username.
+     * @param username String with username
+     * @param password String with password in plaintext (not encoded). 
+     * @return 
+     */
     @Override
     public boolean changePassword(String username, String password) {
         pluginLog.actionHint("Changing password for user %s", username);
