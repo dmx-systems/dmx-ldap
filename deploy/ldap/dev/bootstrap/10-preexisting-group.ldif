@@ -1,0 +1,5 @@
+dn: cn=preexisting_group,dc=example,dc=app
+objectClass: groupOfNames
+cn: preexisting_group
+description: Preexisting group
+member: uid=preexisting,ou=demo_users,dc=example,dc=app

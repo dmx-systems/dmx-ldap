@@ -1,0 +1,12 @@
+# user: preexisting
+# Is already member of group "preexisting_group" when system started.
+dn: uid=preexisting,ou=demo_users,dc=example,dc=app
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+uid: preexisting
+userPassword: test
+sn: dmx-ldap
+cn: preexisting
+memberOf: cn=preexisting_group,dc=example,dc=app
