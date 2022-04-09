@@ -35,4 +35,18 @@ class ApacheLDAP implements LDAP {
         return false;
     }
 
+    @Override
+    public boolean addMember(String groupDn, String user, boolean addManagerIfGroupNotExists) {
+        // TODO: Implement
+
+        return false;
+    }
+
+    @Override
+    public boolean removeMember(String groupDn, String user) {
+        // TODO: Implement
+
+        return false;
+    }
+
 }

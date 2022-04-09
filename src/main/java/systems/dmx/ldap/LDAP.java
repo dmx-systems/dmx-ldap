@@ -8,6 +8,10 @@ interface LDAP {
 
     boolean changePassword(String user, String password);
 
+    boolean addMember(String groupDn, String user, boolean addManagerIfGroupNotExists);
+
+    boolean removeMember(String groupDn, String user);
+
     static LDAP newInstance(Configuration configuration, PluginLog pluginLog) {
         switch (configuration.implementation) {
             default:
@@ -45,10 +49,24 @@ interface LDAP {
 
                 return false;
             }
+
+            @Override
+            public boolean addMember(String groupDn, String user, boolean addManagerIfGroupNotExists) {
+                logError();
+
+                return false;
+            }
+
+            @Override
+            public boolean removeMember(String groupDn, String user) {
+                logError();
+
+                return false;
+            }
         };
     }
 
-    public interface CompletableAction {
+    interface CompletableAction {
 
         default boolean run(String userName) {
             return true;

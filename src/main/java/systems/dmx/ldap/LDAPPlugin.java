@@ -1,18 +1,28 @@
 package systems.dmx.ldap;
 
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
-
 import systems.dmx.accesscontrol.AccessControlService;
 import systems.dmx.accesscontrol.AuthorizationMethod;
+import systems.dmx.core.Assoc;
+import systems.dmx.core.Player;
 import systems.dmx.core.Topic;
+import systems.dmx.core.model.AssocModel;
+import systems.dmx.core.model.PlayerModel;
 import systems.dmx.core.osgi.PluginActivator;
 import systems.dmx.core.service.Inject;
 import systems.dmx.core.service.accesscontrol.Credentials;
+import systems.dmx.core.service.event.PostCreateAssoc;
+import systems.dmx.core.service.event.PostDeleteAssoc;
 import systems.dmx.core.storage.spi.DMXTransaction;
 import systems.dmx.ldap.service.LDAPPluginService;
+import systems.dmx.workspaces.WorkspacesService;
 
-public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService {
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
+
+public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService, PostCreateAssoc, PostDeleteAssoc {
+
+    public static final String WORKSPACE_TYPE = "dmx.workspaces.workspace";
+    public static final String GROUPDN_TYPE = "systems.dmx.ldap.groupdn";
 
     private static Logger logger = Logger.getLogger(LDAPPlugin.class.getName());
 
@@ -27,12 +37,16 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
 
     @Override
     public void serviceArrived(Object service) {
-        ((AccessControlService) service).registerAuthorizationMethod("LDAP", this);
+        if (service instanceof AccessControlService) {
+            ((AccessControlService) service).registerAuthorizationMethod("LDAP", this);
+        }
     }
 
     @Override
     public void serviceGone(Object service) {
-        ((AccessControlService) service).unregisterAuthorizationMethod("LDAP");
+        if (service instanceof AccessControlService) {
+            ((AccessControlService) service).unregisterAuthorizationMethod("LDAP");
+        }
     }
 
     @Override
@@ -145,6 +159,38 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         }
 
         return null;
+    }
+
+    @Override
+    public void postCreateAssoc(Assoc assoc) {
+        if (isType(assoc.getPlayer1(), WORKSPACE_TYPE)
+                && isType(assoc.getPlayer2(), GROUPDN_TYPE)) {
+            String userName = acs.getWorkspaceOwner(assoc.getPlayer1().getId());
+            String groupDn = dmx.getTopic(assoc.getPlayer2().getId()).getSimpleValue().toString();
+            boolean addManagerIfGroupNotExists = userName.equals(AccessControlService.ADMIN_USERNAME);
+
+            ldap.addMember(groupDn, userName, addManagerIfGroupNotExists);
+        }
+    }
+
+    @Override
+    public void postDeleteAssoc(AssocModel assoc) {
+        if (isType(assoc.getPlayer1(), WORKSPACE_TYPE)
+                && isType(assoc.getPlayer2(), GROUPDN_TYPE)) {
+            String userName = acs.getWorkspaceOwner(assoc.getPlayer1().getId());
+            String groupDn = dmx.getTopic(assoc.getPlayer2().getId()).getSimpleValue().toString();
+
+            ldap.removeMember(groupDn, userName);
+        }
+
+    }
+
+    private boolean isType(PlayerModel playerModel, String typeUri) {
+        return playerModel.getTypeUri().equals(typeUri);
+    }
+
+    private boolean isType(Player player, String typeUri) {
+        return isType(player.getModel(), typeUri);
     }
 
 }

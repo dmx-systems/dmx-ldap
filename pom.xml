@@ -16,6 +16,10 @@
         <version>5.2</version>
     </parent>
 
+    <properties>
+        <dmx.deploy.dir>./deploy/instance/dev/bundle-deploy</dmx.deploy.dir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.directory.api</groupId>

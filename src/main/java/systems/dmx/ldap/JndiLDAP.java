@@ -1,27 +1,16 @@
 package systems.dmx.ldap;
 
-import java.io.IOException;
-import java.util.Hashtable;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.Control;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
-import javax.naming.ldap.StartTlsRequest;
-import javax.naming.ldap.StartTlsResponse;
+import javax.naming.directory.*;
+import javax.naming.ldap.*;
 import javax.net.ssl.SSLSession;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
+import java.io.IOException;
+import java.util.Hashtable;
 
 class JndiLDAP implements LDAP {
 
@@ -37,9 +26,10 @@ class JndiLDAP implements LDAP {
     /**
      * Ceates a new user in LDAP-connected service and encodes and hashes the
      * given plaintext password for the user.
+     *
      * @param username String with username
-     * @param password String with password in plaintext (not encoded). 
-     * @return 
+     * @param password String with password in plaintext (not encoded).
+     * @return
      */
     @Override
     public boolean createUser(String username, String password, JndiLDAP.CompletableAction actionOnSuccess) {
@@ -174,11 +164,12 @@ class JndiLDAP implements LDAP {
     }
 
     /**
-     * Encodes and hashes the given plaintext password and issues a "userPassword" 
+     * Encodes and hashes the given plaintext password and issues a "userPassword"
      * attribute replacement call for the given username.
+     *
      * @param username String with username
-     * @param password String with password in plaintext (not encoded). 
-     * @return 
+     * @param password String with password in plaintext (not encoded).
+     * @return
      */
     @Override
     public boolean changePassword(String username, String password) {
@@ -200,7 +191,7 @@ class JndiLDAP implements LDAP {
     boolean changePasswordImpl(
             LdapContext ctx,
             String userName, String password) {
-        String entryDN = String.format("%s=%s,%s", configuration.userAttribute, userName, configuration.userBase);
+        String entryDN = userNameToEntryDn(userName);
 
         ModificationItem mi = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                 new BasicAttribute("userPassword", password));
@@ -214,6 +205,10 @@ class JndiLDAP implements LDAP {
         }
 
         return true;
+    }
+
+    private String userNameToEntryDn(String userName) {
+        return String.format("%s=%s,%s", configuration.userAttribute, userName, configuration.userBase);
     }
 
     private LdapContext connect() {
@@ -278,6 +273,131 @@ class JndiLDAP implements LDAP {
                 pluginLog.actionWarning("Exception while closing connection", ne);
             }
         }
+    }
+
+    @Override
+    public boolean addMember(String groupDn, String user, boolean addManagerIfGroupNotExists) {
+        pluginLog.actionHint("Adding user %s to group %s", user, groupDn);
+
+        LdapContext ctx = null;
+
+        try {
+            ctx = connect();
+
+            return addMemberImpl(ctx, groupDn, user, addManagerIfGroupNotExists);
+        } finally {
+            closeQuietly(ctx);
+        }
+    }
+
+    private boolean createGroup(LdapContext ctx, String groupDn, String firstMemberDn) {
+        Attribute member = new BasicAttribute("member", firstMemberDn);
+
+        Attribute oc = new BasicAttribute("objectClass");
+        oc.add("top");
+        oc.add("groupOfNames");
+
+        BasicAttributes entry = new BasicAttributes();
+        entry.put(oc);
+        entry.put(member);
+
+        try {
+            ctx.createSubcontext(groupDn, entry);
+        } catch (NamingException ne) {
+            pluginLog.actionError("Unable to create group subcontext", ne);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean addMemberImpl(LdapContext ctx, String groupDn, String user, boolean addManagerIfGroupNotExists) {
+        try {
+            ctx.lookup(groupDn);
+        } catch (NamingException ne) {
+            pluginLog.actionHint("Group %s does not exist. Attempting to create it.", groupDn);
+
+            String firstMemberDn =
+                    (addManagerIfGroupNotExists) ? configuration.manager : userNameToEntryDn(user);
+
+            return createGroup(ctx, groupDn, firstMemberDn);
+        }
+
+        // group exists, lets add our user
+        String userEntryDn = userNameToEntryDn(user);
+
+        ModificationItem mi = new ModificationItem(DirContext.ADD_ATTRIBUTE,
+                new BasicAttribute("member", userEntryDn));
+
+        try {
+            ctx.modifyAttributes(groupDn, new ModificationItem[]{mi});
+        } catch (NamingException ne) {
+            pluginLog.actionWarning("Attempt to modify member attribute lead to exception", ne);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean removeMember(String groupDn, String user) {
+        pluginLog.actionHint("Removing user %s from group %s", user, groupDn);
+
+        LdapContext ctx = null;
+
+        try {
+            ctx = connect();
+
+            return removeMemberImpl(ctx, groupDn, user);
+        } finally {
+            closeQuietly(ctx);
+        }
+    }
+
+    private boolean maybeDeleteGroup(LdapContext ctx, DirContext groupContext, String groupDn, String userEntryDn) {
+        try {
+            Attribute a = groupContext.getAttributes("").get("member");
+            if (a.size() == 1 && userEntryDn.equals(a.get(0))) {
+                pluginLog.actionHint("Group %s is now empty. Attempting to delete.", groupDn);
+                ctx.destroySubcontext(groupDn);
+                return true;
+            }
+        } catch (NamingException ne) {
+            pluginLog.actionHint("Unable to check membership or delete the group %s", groupDn);
+        }
+
+        return false;
+    }
+
+    private boolean removeMemberImpl(LdapContext ctx, String groupDn, String user) {
+        String userEntryDn = userNameToEntryDn(user);
+        DirContext groupContext = null;
+        try {
+            groupContext = (DirContext) ctx.lookup(groupDn);
+        } catch (NamingException ne) {
+            pluginLog.actionWarning("Unable to look up group lead to exception", ne);
+
+            return false;
+        }
+
+        if (maybeDeleteGroup(ctx, groupContext, groupDn, userEntryDn)) {
+            return true;
+        }
+
+        ModificationItem mi = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+                new BasicAttribute("member", userEntryDn));
+
+        try {
+            ctx.modifyAttributes(groupDn, new ModificationItem[]{mi});
+        } catch (NamingException ne) {
+            pluginLog.actionWarning("Attempt to modify member attribute lead to exception", ne);
+
+            return false;
+        }
+
+        return true;
     }
 
 }
