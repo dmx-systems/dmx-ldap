@@ -18,7 +18,17 @@ dmx.ldap.user_filter =
 dmx.ldap.user_member_group = 
 dmx.ldap.logging = INFO
 dmx.ldap.user_creation.enabled = false
+dmx.ldap.group_base = 
 ```
+LDAP Group functionality:
+If a proper group base is set, then the plugin will allow setting a group attribute on Workspace topics. The group
+name forms a distinguished name together with the group base configuration value in the form
+``` 
+ cn=<group name>,<group base>
+```
+When the group attribute is first set, then a corresponding LDAP Group (groupOf) is created with the user that
+is the owner of the workspace as the first member. If that member is the admin and the admin is not handled in
+LDAP the LDAP manager account is used as a fallback.
 
 User creation:
 The plugin is able to create new entries in the LDAP through a plugin method. However this critical functionality is
@@ -44,6 +54,22 @@ Known logging values are:
  
 - INFO (default): Only warnings and errors are logged including possible misconfigurations.
 - DEBUG: Hints, warning and errors are extensively logged during configuration and runtime phase.
+
+Interaction using Topics
+
+Topics of type systems.dmx.ldap.groupdn (GroupDN) can define a DN which denotes a groupOf object in LDAP.
+
+When a default association between a Workspace and the GroupDN topic is created the LDAP plugin creates the
+groupOf object. Additionally it sets the owner of the workspace as the first member of the groupOf object.
+
+It is assumed that the workspace owner, a DMX user, has a LDAP representation.
+
+If the workspace owner is the admin user but does not have a LDAP representation, the plugin uses the
+configured manager account instead. 
+
+When the association between a workspace and a GroupDN is deleted, the corresponding workspace owner's
+member attribute is removed. When the last entry is about to be removed, the actual groupOf object is
+deleted as well.
 
 ## Licensing
 

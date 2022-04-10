@@ -30,6 +30,8 @@ public class Configuration {
     String userFilter;
     String userMemberGroup;
 
+    String groupBase;
+
     private String connectionUrl;
 
     String getConnectionUrl() {
@@ -77,6 +79,7 @@ public class Configuration {
         c.userAttribute = System.getProperty("dmx.ldap.user_attribute", "");
         c.userFilter = System.getProperty("dmx.ldap.user_filter", "");
         c.userMemberGroup = System.getProperty("dmx.ldap.user_member_group", "");
+        c.groupBase = System.getProperty("dmx.ldap.group_base", "");
         return c;
     }
 
@@ -93,6 +96,7 @@ public class Configuration {
         c.userAttribute = "";
         c.userFilter = "";
         c.userMemberGroup = "";
+        c.groupBase = "";
 
         return c;
     }
@@ -123,6 +127,10 @@ public class Configuration {
 
         if (StringUtils.isEmpty(userFilter)) {
             log.configurationHint("No filter expression provided. Defaulting to mere existance check. Check property 'dmx.ldap.user_filter' to customize!");
+        }
+
+        if (StringUtils.isEmpty(groupBase)) {
+            log.configurationHint("No group base defined. LDAP Group handling will not work. Check property 'dmx.ldap.group_base'!");
         }
 
         if (userCreationEnabled) {

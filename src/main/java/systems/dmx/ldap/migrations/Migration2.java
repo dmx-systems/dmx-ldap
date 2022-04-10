@@ -12,7 +12,7 @@ public class Migration2 extends Migration {
         wsType.addCompDef(
                 mf.newCompDefModel(
                         LDAPPlugin.WORKSPACE_TYPE,
-                        LDAPPlugin.GROUPDN_TYPE,
+                        LDAPPlugin.GROUP_TYPE,
                         "dmx.core.one"
                 )
         );

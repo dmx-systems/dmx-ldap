@@ -1,5 +1,7 @@
 package systems.dmx.ldap;
 
+import java.util.List;
+
 interface LDAP {
 
     boolean checkCredentials(String user, String password);
@@ -8,9 +10,13 @@ interface LDAP {
 
     boolean changePassword(String user, String password);
 
-    boolean addMember(String groupDn, String user, boolean addManagerIfGroupNotExists);
+    boolean createGroup(String group, String user, boolean isAdmin, List<String> members);
 
-    boolean removeMember(String groupDn, String user);
+    boolean deleteGroup(String group);
+
+    boolean addMember(String group, String user, boolean isAdmin);
+
+    boolean removeMember(String group, String user, boolean isAdmin);
 
     static LDAP newInstance(Configuration configuration, PluginLog pluginLog) {
         switch (configuration.implementation) {
@@ -51,14 +57,28 @@ interface LDAP {
             }
 
             @Override
-            public boolean addMember(String groupDn, String user, boolean addManagerIfGroupNotExists) {
+            public boolean addMember(String groupDn, String user, boolean isAdmin) {
                 logError();
 
                 return false;
             }
 
             @Override
-            public boolean removeMember(String groupDn, String user) {
+            public boolean removeMember(String groupDn, String user, boolean isAdmin) {
+                logError();
+
+                return false;
+            }
+
+            @Override
+            public boolean createGroup(String group, String user, boolean isAdmin, List<String> members) {
+                logError();
+
+                return false;
+            }
+
+            @Override
+            public boolean deleteGroup(String group) {
                 logError();
 
                 return false;
