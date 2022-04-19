@@ -12,3 +12,4 @@ dmx.ldap.user_attribute = uid
 dmx.ldap.user_member_group = 
 dmx.ldap.logging = DEBUG
 dmx.ldap.user_creation.enabled = true
+dmx.ldap.group_base = dc=example,dc=app

@@ -230,13 +230,14 @@ public class Configuration {
 
         // Shows trust store information when protocol is not-LDAP or a non-empty trust store is given
         String trustStoreSummary = (protocol != ProtocolType.LDAP || StringUtils.isNotEmpty(trustStore))
-                ? String.format("\njavax.net.ssl.trustStore=%s\njavax.net.ssl.trustStorePassword=%s", trustStore, StringUtils.isEmpty(trustStorePassword) ? "" : "***")
+                ? String.format("javax.net.ssl.trustStore=%s\njavax.net.ssl.trustStorePassword=%s", trustStore, StringUtils.isEmpty(trustStorePassword) ? "" : "***")
                 : "";
 
+        String maskedPassword = StringUtils.isEmpty(password) ? "" : "***";
         return String.format(
-                "dmx.ldap.protocol=%s\ndmx.ldap.server=%s\ndmx.ldap.port=%s\ndmx.ldap.implementation=%s\ndmx.ldap.logging=%s\ndmx.ldap.user_creation.enabled=%s\ndmx.ldap.manager=%s\ndmx.ldap.password=%s\ndmx.ldap.user_base=%s\ndmx.ldap.user_attribute=%s\ndmx.ldap.user_acceptance_filter=%s\ndmx.ldap.user_member_group=%s%s",
-                protocol, server, port, implementation, loggingMode, userCreationEnabled, manager, StringUtils.isEmpty(password) ? "" : "***", userBase,
-                userAttribute, userFilter, userMemberGroup, trustStoreSummary);
+                "dmx.ldap.protocol=%s\ndmx.ldap.server=%s\ndmx.ldap.port=%s\ndmx.ldap.implementation=%s\ndmx.ldap.logging=%s\ndmx.ldap.user_creation.enabled=%s\ndmx.ldap.manager=%s\ndmx.ldap.password=%s\ndmx.ldap.user_base=%s\ndmx.ldap.user_attribute=%s\ndmx.ldap.user_acceptance_filter=%s\ndmx.ldap.user_member_group=%s\ndmx.ldap.group_base=%s\n%s",
+                protocol, server, port, implementation, loggingMode, userCreationEnabled, manager, maskedPassword, userBase,
+                userAttribute, userFilter, userMemberGroup, groupBase, trustStoreSummary);
     }
 
 }

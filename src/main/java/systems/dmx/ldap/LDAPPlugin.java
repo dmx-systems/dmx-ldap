@@ -152,7 +152,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     @Override
     public Topic changePassword(Credentials credentials) {
         if (!configuration.userCreationEnabled) {
-            pluginLog.actionWarning("Cannot change password because user creation is disabled in plugin configuration!", null);
+            pluginLog.actionWarning("Cannot change password because user creation is disabled in plugin configuration!");
 
             return null;
         }
@@ -169,13 +169,14 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         return null;
     }
 
-    private List<String> getMembers(Topic workspaceTopic) {
+    private List<String> getMembers(Topic workspaceTopic, String excluded) {
         return workspaceTopic.getRelatedTopics(
                 MEMBERSHIP_ASSOC_TYPE,
                 null,
                 null,
                 USERNAME_TOPIC_TYPE
-        ).stream().map(relatedTopic -> relatedTopic.getSimpleValue().toString()).collect(Collectors.toList());
+        ).stream().map(relatedTopic -> relatedTopic.getSimpleValue().toString())
+                .filter(name -> !name.equals(excluded)).collect(Collectors.toList());
     }
 
     private boolean isWorkspaceGroupComposition(AssocModel assoc) {
@@ -186,8 +187,8 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
 
     private boolean isUsernameWorkspaceMembership(AssocModel assoc) {
         return isType(assoc, MEMBERSHIP_ASSOC_TYPE)
-                && isType(assoc.getPlayer1(), USERNAME_TOPIC_TYPE)
-                && isType(assoc.getPlayer2(), WORKSPACE_TYPE);
+                && isPlayerType(assoc, USERNAME_TOPIC_TYPE)
+                && isPlayerType(assoc, WORKSPACE_TYPE);
     }
 
     @Override
@@ -195,20 +196,18 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         if (isWorkspaceGroupComposition(assoc.getModel())) {
             String userName = acs.getWorkspaceOwner(assoc.getPlayer1().getId());
             String group = dmx.getTopic(assoc.getPlayer2().getId()).getSimpleValue().toString();
-            boolean isAdmin = userName.equals(AccessControlService.ADMIN_USERNAME);
 
             Topic workspace = dmx.getTopic(assoc.getPlayer1().getId());
 
-            ldap.createGroup(group, userName, isAdmin, getMembers(workspace));
+            ldap.createGroup(group, userName, getMembers(workspace, userName));
         } else if (isUsernameWorkspaceMembership(assoc.getModel())) {
-            String group = dmx.getTopic(assoc.getPlayer2().getId()).getChildTopics().getString(GROUP_TYPE, null);
+            String group = getPlayerTopicByType(assoc.getModel(), WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
 
-            String userName = dmx.getTopic(assoc.getPlayer1().getId()).getSimpleValue().toString();
+            String userName = getPlayerTopicByType(assoc.getModel(), USERNAME_TOPIC_TYPE).getSimpleValue().toString();
             String workspaceOwner = acs.getWorkspaceOwner(assoc.getPlayer2().getId());
 
             if (group != null && !userName.equals(workspaceOwner)) {
-                boolean isAdmin = userName.equals(AccessControlService.ADMIN_USERNAME);
-                ldap.addMember(group, userName, isAdmin);
+                ldap.addMember(group, userName);
             }
         }
     }
@@ -221,18 +220,32 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
 
             ldap.deleteGroup(group);
         } else if (isUsernameWorkspaceMembership(assoc)) {
-            String group = dmx.getTopic(assoc.getPlayer2().getId()).getChildTopics().getString(GROUP_TYPE, null);
+            String group = getPlayerTopicByType(assoc, WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
 
-            String userName = dmx.getTopic(assoc.getPlayer1().getId()).getSimpleValue().toString();
+            String userName = getPlayerTopicByType(assoc, USERNAME_TOPIC_TYPE).getSimpleValue().toString();
             String workspaceOwner = acs.getWorkspaceOwner(assoc.getPlayer2().getId());
 
             if (group != null && !userName.equals(workspaceOwner)) {
-                boolean isAdmin = userName.equals(AccessControlService.ADMIN_USERNAME);
-                ldap.removeMember(group, userName, isAdmin);
+                ldap.removeMember(group, userName);
             }
 
         }
 
+    }
+
+    private boolean isPlayerType(AssocModel assoc, String typeUri) {
+        return assoc.getPlayer1().getTypeUri().equals(typeUri)
+                || assoc.getPlayer2().getTypeUri().equals(typeUri);
+    }
+
+    private Topic getPlayerTopicByType(AssocModel assoc, String typeUri) {
+        if (assoc.getPlayer1().getTypeUri().equals(typeUri)) {
+            return dmx.getTopic(assoc.getPlayer1().getId());
+        } else if (assoc.getPlayer2().getTypeUri().equals(typeUri)) {
+            return dmx.getTopic(assoc.getPlayer2().getId());
+        }
+
+        throw new IllegalStateException("Requested topic type is not a player of the association!");
     }
 
     private boolean isType(PlayerModel playerModel, String typeUri) {

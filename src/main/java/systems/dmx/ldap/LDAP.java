@@ -10,13 +10,13 @@ interface LDAP {
 
     boolean changePassword(String user, String password);
 
-    boolean createGroup(String group, String user, boolean isAdmin, List<String> members);
+    boolean createGroup(String group, String user, List<String> members);
 
     boolean deleteGroup(String group);
 
-    boolean addMember(String group, String user, boolean isAdmin);
+    boolean addMember(String group, String user);
 
-    boolean removeMember(String group, String user, boolean isAdmin);
+    boolean removeMember(String group, String user);
 
     static LDAP newInstance(Configuration configuration, PluginLog pluginLog) {
         switch (configuration.implementation) {
@@ -57,21 +57,21 @@ interface LDAP {
             }
 
             @Override
-            public boolean addMember(String groupDn, String user, boolean isAdmin) {
+            public boolean addMember(String groupDn, String user) {
                 logError();
 
                 return false;
             }
 
             @Override
-            public boolean removeMember(String groupDn, String user, boolean isAdmin) {
+            public boolean removeMember(String groupDn, String user) {
                 logError();
 
                 return false;
             }
 
             @Override
-            public boolean createGroup(String group, String user, boolean isAdmin, List<String> members) {
+            public boolean createGroup(String group, String user, List<String> members) {
                 logError();
 
                 return false;

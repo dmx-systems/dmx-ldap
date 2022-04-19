@@ -10,8 +10,11 @@ import javax.naming.directory.*;
 import javax.naming.ldap.*;
 import javax.net.ssl.SSLSession;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 class JndiLDAP implements LDAP {
 
@@ -158,7 +161,7 @@ class JndiLDAP implements LDAP {
 
             return searchResult.getNameInNamespace();
         } else {
-            pluginLog.actionWarning("Lookup using search filter was empty.", null);
+            pluginLog.actionWarning("Lookup using search filter was empty.");
 
             return null;
         }
@@ -281,7 +284,7 @@ class JndiLDAP implements LDAP {
     }
 
     @Override
-    public boolean addMember(String group, String user, boolean isAdmin) {
+    public boolean addMember(String group, String user) {
         String groupDn = groupDn(group);
         pluginLog.actionHint("Adding user %s to group %s", user, groupDn);
 
@@ -290,30 +293,35 @@ class JndiLDAP implements LDAP {
         try {
             ctx = connect();
 
-            return addMemberImpl(ctx, groupDn, user, isAdmin);
+            return addMemberImpl(ctx, groupDn, user);
         } finally {
             closeQuietly(ctx);
         }
     }
 
     @Override
-    public boolean createGroup(String group, String user, boolean isAdmin, List<String> members) {
+    public boolean createGroup(String group, String user, List<String> members) {
         LdapContext ctx = null;
         try {
             ctx = connect();
             String groupDn = groupDn(group);
-            String firstMemberDn =
-                    (isAdmin) ? adminOrManagerDn(ctx) : userNameToEntryDn(user);
+            String firstMemberDn = resolveUserDn(ctx, user);
 
-            return createGroupImpl(ctx, groupDn, firstMemberDn);
+            LdapContext finalCtx = ctx;
+            List<String> otherMemberDns = members.stream().map(it -> resolveUserDn(finalCtx, it)).filter(Objects::nonNull).collect(Collectors.toList());
+
+            return createGroupImpl(ctx, groupDn, firstMemberDn, otherMemberDns);
         } finally {
             closeQuietly(ctx);
         }
     }
 
-    private boolean createGroupImpl(LdapContext ctx, String groupDn, String firstMemberDn) {
-        pluginLog.actionHint("Creating group %s with first member", groupDn, firstMemberDn);
+    private boolean createGroupImpl(LdapContext ctx, String groupDn, String firstMemberDn, List<String> otherMemberDns) {
+        pluginLog.actionHint("Creating group %s with first member %s and %s other members", groupDn, firstMemberDn, otherMemberDns.size());
         Attribute member = new BasicAttribute("member", firstMemberDn);
+
+        // Handles other members
+        otherMemberDns.forEach(member::add);
 
         Attribute oc = new BasicAttribute("objectClass");
         oc.add("top");
@@ -334,21 +342,21 @@ class JndiLDAP implements LDAP {
         return true;
     }
 
-    private boolean addMemberImpl(LdapContext ctx, String groupDn, String user, boolean isAdmin) {
+    private boolean addMemberImpl(LdapContext ctx, String groupDn, String user) {
+        String userEntryDn = resolveUserDn(ctx, user);
+        if (userEntryDn == null) {
+            return false;
+        }
+
         try {
             ctx.lookup(groupDn);
         } catch (NamingException ne) {
             pluginLog.actionHint("Group %s does not exist. Attempting to create it.", groupDn);
 
-            String firstMemberDn =
-                    (isAdmin) ? adminOrManagerDn(ctx) : userNameToEntryDn(user);
-
-            return createGroupImpl(ctx, groupDn, firstMemberDn);
+            return createGroupImpl(ctx, groupDn, userEntryDn, Collections.emptyList());
         }
 
         // group exists, lets add our user
-        String userEntryDn = userNameToEntryDn(user);
-
         ModificationItem mi = new ModificationItem(DirContext.ADD_ATTRIBUTE,
                 new BasicAttribute("member", userEntryDn));
 
@@ -372,7 +380,7 @@ class JndiLDAP implements LDAP {
             pluginLog.actionHint("Trying to delete group %s", groupDn);
             ctx = connect();
 
-            ctx.destroySubcontext(groupDn(group));
+            ctx.destroySubcontext(groupDn);
 
             return true;
         } catch (NamingException ne) {
@@ -386,7 +394,8 @@ class JndiLDAP implements LDAP {
     }
 
     @Override
-    public boolean removeMember(String groupDn, String user, boolean isAdmin) {
+    public boolean removeMember(String group, String user) {
+        String groupDn = groupDn(group);
         pluginLog.actionHint("Removing user %s from group %s", user, groupDn);
 
         LdapContext ctx = null;
@@ -394,7 +403,12 @@ class JndiLDAP implements LDAP {
         try {
             ctx = connect();
 
-            return removeMemberImpl(ctx, groupDn, user, isAdmin);
+            String userDn = resolveUserDn(ctx, user);
+            if (userDn == null) {
+                return false;
+            }
+
+            return removeMemberImpl(ctx, groupDn, userDn);
         } finally {
             closeQuietly(ctx);
         }
@@ -415,19 +429,31 @@ class JndiLDAP implements LDAP {
         return false;
     }
 
-    private String adminOrManagerDn(LdapContext ctx) {
-        String adminUserDn = userNameToEntryDn(ADMIN_USER);
+    private String resolveUserDn(LdapContext ctx, String userName) {
+        // Transform userName into DN by regular means.
+        String userDn = userNameToEntryDn(userName);
+
         try {
-            ctx.lookup(adminUserDn);
-            return adminUserDn;
+            ctx.lookup(userDn);
+
+            // User is in LDAP (regardless if admin or not)
+            return userDn;
         } catch (NamingException ne) {
-            // Admin is not in LDAP, so use manager account instead
-            return configuration.manager;
+            // User is not in LDAP
+
+            // If this is the admin, return the manager instead, otherwise null to indicate that
+            // we should not reference this user in LDAP.
+            if(userName.equals(ADMIN_USER)) {
+                return configuration.manager;
+            } else {
+                pluginLog.actionWarning("Unable to find regular user %s in LDAP. Ignoring", userName);
+                return null;
+            }
         }
     }
 
-    private boolean removeMemberImpl(LdapContext ctx, String groupDn, String user, boolean isAdmin) {
-        DirContext groupContext = null;
+    private boolean removeMemberImpl(LdapContext ctx, String groupDn, String userEntryDn) {
+        DirContext groupContext;
         try {
             groupContext = (DirContext) ctx.lookup(groupDn);
         } catch (NamingException ne) {
@@ -436,7 +462,6 @@ class JndiLDAP implements LDAP {
             return false;
         }
 
-        String userEntryDn = isAdmin ? adminOrManagerDn(ctx) : userNameToEntryDn(user);
         if (maybeDeleteGroup(ctx, groupContext, groupDn, userEntryDn)) {
             return true;
         }

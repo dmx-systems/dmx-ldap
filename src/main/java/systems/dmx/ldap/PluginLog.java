@@ -15,6 +15,8 @@ interface PluginLog {
 
 	void actionHint(String msg, Object... args);
 
+	void actionWarning(String msg, Object... args);
+
 	void actionWarning(String message, Throwable throwable);
 	
 	void actionError(String message, Throwable throwable);
@@ -59,8 +61,13 @@ class ProductionLog implements PluginLog {
     public void actionHint(String msg, Object... args) {
 		// Hints are disabled in production log
     }
-    
-    @Override
+
+	@Override
+	public void actionWarning(String msg, Object... args) {
+		logger.log(Level.WARNING, String.format(msg, args));
+	}
+
+	@Override
     public void actionWarning(String message, Throwable throwable) {
 		logger.log(Level.WARNING, message, throwable);
     }

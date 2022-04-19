@@ -62,6 +62,11 @@ public class TroubleShootingLog implements PluginLog {
     }
 
     @Override
+    public void actionWarning(String message, Object... args) {
+        logger.log(Level.WARNING, String.format(message, args));
+    }
+
+    @Override
     public void actionWarning(String message, Throwable throwable) {
         logger.log(Level.WARNING, prepareMessage(message, throwable));
     }

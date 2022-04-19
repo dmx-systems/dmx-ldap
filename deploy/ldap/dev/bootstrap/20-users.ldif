@@ -7,7 +7,6 @@ objectClass: inetOrgPerson
 userPassword: test
 sn: dmx-ldap
 cn: preexisting
-memberOf: cn=preexisting_group,dc=example,dc=app
 
 # user: testuser1
 dn: uid=testuser1,ou=demo_users,dc=example,dc=app

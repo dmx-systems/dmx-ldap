@@ -38,21 +38,21 @@ class ApacheLDAP implements LDAP {
     }
 
     @Override
-    public boolean addMember(String group, String user, boolean isAdmin) {
+    public boolean addMember(String group, String user) {
         // TODO: Implement
 
         return false;
     }
 
     @Override
-    public boolean removeMember(String group, String user, boolean isAdmin) {
+    public boolean removeMember(String group, String user) {
         // TODO: Implement
 
         return false;
     }
 
     @Override
-    public boolean createGroup(String group, String user, boolean isAdmin, List<String> members) {
+    public boolean createGroup(String group, String user, List<String> members) {
         // TODO: Implement
 
         return false;
