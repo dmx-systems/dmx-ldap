@@ -7,7 +7,7 @@
     <name>DMX LDAP</name>
     <groupId>systems.dmx</groupId>
     <artifactId>dmx-ldap</artifactId>
-    <version>0.5.4-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
 
     <parent>
@@ -15,6 +15,10 @@
         <artifactId>dmx-plugin</artifactId>
         <version>5.2</version>
     </parent>
+
+    <properties>
+        <dmx.deploy.dir>./deploy/instance/dev/bundle-deploy</dmx.deploy.dir>
+    </properties>
 
     <dependencies>
         <dependency>

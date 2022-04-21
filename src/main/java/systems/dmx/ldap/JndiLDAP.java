@@ -1,27 +1,20 @@
 package systems.dmx.ldap;
 
-import java.io.IOException;
-import java.util.Hashtable;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
 
 import javax.naming.Context;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.BasicAttribute;
-import javax.naming.directory.BasicAttributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
-import javax.naming.ldap.Control;
-import javax.naming.ldap.InitialLdapContext;
-import javax.naming.ldap.LdapContext;
-import javax.naming.ldap.StartTlsRequest;
-import javax.naming.ldap.StartTlsResponse;
+import javax.naming.directory.*;
+import javax.naming.ldap.*;
 import javax.net.ssl.SSLSession;
-
-import org.apache.commons.lang.StringUtils;
-import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 class JndiLDAP implements LDAP {
 
@@ -37,9 +30,10 @@ class JndiLDAP implements LDAP {
     /**
      * Ceates a new user in LDAP-connected service and encodes and hashes the
      * given plaintext password for the user.
+     *
      * @param username String with username
-     * @param password String with password in plaintext (not encoded). 
-     * @return 
+     * @param password String with password in plaintext (not encoded).
+     * @return
      */
     @Override
     public boolean createUser(String username, String password, JndiLDAP.CompletableAction actionOnSuccess) {
@@ -167,18 +161,19 @@ class JndiLDAP implements LDAP {
 
             return searchResult.getNameInNamespace();
         } else {
-            pluginLog.actionWarning("Lookup using search filter was empty.", null);
+            pluginLog.actionWarning("Lookup using search filter was empty.");
 
             return null;
         }
     }
 
     /**
-     * Encodes and hashes the given plaintext password and issues a "userPassword" 
+     * Encodes and hashes the given plaintext password and issues a "userPassword"
      * attribute replacement call for the given username.
+     *
      * @param username String with username
-     * @param password String with password in plaintext (not encoded). 
-     * @return 
+     * @param password String with password in plaintext (not encoded).
+     * @return
      */
     @Override
     public boolean changePassword(String username, String password) {
@@ -200,7 +195,7 @@ class JndiLDAP implements LDAP {
     boolean changePasswordImpl(
             LdapContext ctx,
             String userName, String password) {
-        String entryDN = String.format("%s=%s,%s", configuration.userAttribute, userName, configuration.userBase);
+        String entryDN = userNameToEntryDn(userName);
 
         ModificationItem mi = new ModificationItem(DirContext.REPLACE_ATTRIBUTE,
                 new BasicAttribute("userPassword", password));
@@ -214,6 +209,10 @@ class JndiLDAP implements LDAP {
         }
 
         return true;
+    }
+
+    private String userNameToEntryDn(String userName) {
+        return String.format("%s=%s,%s", configuration.userAttribute, userName, configuration.userBase);
     }
 
     private LdapContext connect() {
@@ -280,4 +279,206 @@ class JndiLDAP implements LDAP {
         }
     }
 
+    private String groupDn(String groupName) {
+        return String.format("cn=%s,%s", groupName, configuration.groupBase);
+    }
+
+    @Override
+    public boolean addMember(String group, String user) {
+        String groupDn = groupDn(group);
+        pluginLog.actionHint("Adding user %s to group %s", user, groupDn);
+
+        LdapContext ctx = null;
+
+        try {
+            ctx = connect();
+
+            return addMemberImpl(ctx, groupDn, user);
+        } finally {
+            closeQuietly(ctx);
+        }
+    }
+
+    @Override
+    public boolean createGroup(String group, String user, List<String> members) {
+        LdapContext ctx = null;
+        try {
+            ctx = connect();
+            String groupDn = groupDn(group);
+            String firstMemberDn = resolveUserDn(ctx, user);
+
+            LdapContext finalCtx = ctx;
+            List<String> otherMemberDns = members.stream().map(it -> resolveUserDn(finalCtx, it)).filter(Objects::nonNull).collect(Collectors.toList());
+
+            return createGroupImpl(ctx, groupDn, firstMemberDn, otherMemberDns);
+        } finally {
+            closeQuietly(ctx);
+        }
+    }
+
+    private boolean createGroupImpl(LdapContext ctx, String groupDn, String firstMemberDn, List<String> otherMemberDns) {
+        pluginLog.actionHint("Creating group %s with first member %s and %s other members", groupDn, firstMemberDn, otherMemberDns.size());
+        Attribute member = new BasicAttribute("member", firstMemberDn);
+
+        // Handles other members
+        otherMemberDns.forEach(member::add);
+
+        Attribute oc = new BasicAttribute("objectClass");
+        oc.add("top");
+        oc.add("groupOfNames");
+
+        BasicAttributes entry = new BasicAttributes();
+        entry.put(oc);
+        entry.put(member);
+
+        try {
+            ctx.createSubcontext(groupDn, entry);
+        } catch (NamingException ne) {
+            pluginLog.actionError("Unable to create group subcontext", ne);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean addMemberImpl(LdapContext ctx, String groupDn, String user) {
+        String userEntryDn = resolveUserDn(ctx, user);
+        if (userEntryDn == null) {
+            return false;
+        }
+
+        try {
+            ctx.lookup(groupDn);
+        } catch (NamingException ne) {
+            pluginLog.actionHint("Group %s does not exist. Attempting to create it.", groupDn);
+
+            return createGroupImpl(ctx, groupDn, userEntryDn, Collections.emptyList());
+        }
+
+        // group exists, lets add our user
+        ModificationItem mi = new ModificationItem(DirContext.ADD_ATTRIBUTE,
+                new BasicAttribute("member", userEntryDn));
+
+        try {
+            ctx.modifyAttributes(groupDn, new ModificationItem[]{mi});
+        } catch (NamingException ne) {
+            pluginLog.actionWarning("Attempt to modify member attribute lead to exception", ne);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean deleteGroup(String group) {
+        String groupDn = groupDn(group);
+
+        LdapContext ctx = null;
+        try {
+            pluginLog.actionHint("Trying to delete group %s", groupDn);
+            ctx = connect();
+
+            ctx.destroySubcontext(groupDn);
+
+            return true;
+        } catch (NamingException ne) {
+            pluginLog.actionWarning("Attempt to delete group lead to exception", ne);
+
+        } finally {
+            closeQuietly(ctx);
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean removeMember(String group, String user) {
+        String groupDn = groupDn(group);
+        pluginLog.actionHint("Removing user %s from group %s", user, groupDn);
+
+        LdapContext ctx = null;
+
+        try {
+            ctx = connect();
+
+            String userDn = resolveUserDn(ctx, user);
+            if (userDn == null) {
+                return false;
+            }
+
+            return removeMemberImpl(ctx, groupDn, userDn);
+        } finally {
+            closeQuietly(ctx);
+        }
+    }
+
+    private boolean maybeDeleteGroup(LdapContext ctx, DirContext groupContext, String groupDn, String userEntryDn) {
+        try {
+            Attribute a = groupContext.getAttributes("").get("member");
+            if (a.size() == 1 && userEntryDn.equals(a.get(0))) {
+                pluginLog.actionHint("Group %s is now empty. Attempting to delete.", groupDn);
+                ctx.destroySubcontext(groupDn);
+                return true;
+            }
+        } catch (NamingException ne) {
+            pluginLog.actionHint("Unable to check membership or delete the group %s", groupDn);
+        }
+
+        return false;
+    }
+
+    private String resolveUserDn(LdapContext ctx, String userName) {
+        // Transform userName into DN by regular means.
+        String userDn = userNameToEntryDn(userName);
+
+        try {
+            ctx.lookup(userDn);
+
+            // User is in LDAP (regardless if admin or not)
+            return userDn;
+        } catch (NamingException ne) {
+            // User is not in LDAP
+
+            // If this is the admin, return the manager instead, otherwise null to indicate that
+            // we should not reference this user in LDAP.
+            if(userName.equals(ADMIN_USER)) {
+                return configuration.manager;
+            } else {
+                pluginLog.actionWarning("Unable to find regular user %s in LDAP. Ignoring", userName);
+                return null;
+            }
+        }
+    }
+
+    private boolean removeMemberImpl(LdapContext ctx, String groupDn, String userEntryDn) {
+        DirContext groupContext;
+        try {
+            groupContext = (DirContext) ctx.lookup(groupDn);
+        } catch (NamingException ne) {
+            pluginLog.actionWarning("Unable to look up group lead to exception", ne);
+
+            return false;
+        }
+
+        if (maybeDeleteGroup(ctx, groupContext, groupDn, userEntryDn)) {
+            return true;
+        }
+
+        ModificationItem mi = new ModificationItem(DirContext.REMOVE_ATTRIBUTE,
+                new BasicAttribute("member", userEntryDn));
+
+        try {
+            ctx.modifyAttributes(groupDn, new ModificationItem[]{mi});
+        } catch (NamingException ne) {
+            pluginLog.actionWarning("Attempt to modify member attribute lead to exception", ne);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private static final String ADMIN_USER = "admin";
 }

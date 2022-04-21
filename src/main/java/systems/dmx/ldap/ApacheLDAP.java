@@ -1,5 +1,7 @@
 package systems.dmx.ldap;
 
+import java.util.List;
+
 class ApacheLDAP implements LDAP {
 
     private final Configuration configuration;
@@ -35,4 +37,31 @@ class ApacheLDAP implements LDAP {
         return false;
     }
 
+    @Override
+    public boolean addMember(String group, String user) {
+        // TODO: Implement
+
+        return false;
+    }
+
+    @Override
+    public boolean removeMember(String group, String user) {
+        // TODO: Implement
+
+        return false;
+    }
+
+    @Override
+    public boolean createGroup(String group, String user, List<String> members) {
+        // TODO: Implement
+
+        return false;
+    }
+
+    @Override
+    public boolean deleteGroup(String group) {
+        // TODO: Implement
+
+        return false;
+    }
 }

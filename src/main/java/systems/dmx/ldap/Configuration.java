@@ -30,6 +30,8 @@ public class Configuration {
     String userFilter;
     String userMemberGroup;
 
+    String groupBase;
+
     private String connectionUrl;
 
     String getConnectionUrl() {
@@ -77,6 +79,7 @@ public class Configuration {
         c.userAttribute = System.getProperty("dmx.ldap.user_attribute", "");
         c.userFilter = System.getProperty("dmx.ldap.user_filter", "");
         c.userMemberGroup = System.getProperty("dmx.ldap.user_member_group", "");
+        c.groupBase = System.getProperty("dmx.ldap.group_base", "");
         return c;
     }
 
@@ -93,6 +96,7 @@ public class Configuration {
         c.userAttribute = "";
         c.userFilter = "";
         c.userMemberGroup = "";
+        c.groupBase = "";
 
         return c;
     }
@@ -123,6 +127,10 @@ public class Configuration {
 
         if (StringUtils.isEmpty(userFilter)) {
             log.configurationHint("No filter expression provided. Defaulting to mere existance check. Check property 'dmx.ldap.user_filter' to customize!");
+        }
+
+        if (StringUtils.isEmpty(groupBase)) {
+            log.configurationHint("No group base defined. LDAP Group handling will not work. Check property 'dmx.ldap.group_base'!");
         }
 
         if (userCreationEnabled) {
@@ -222,13 +230,14 @@ public class Configuration {
 
         // Shows trust store information when protocol is not-LDAP or a non-empty trust store is given
         String trustStoreSummary = (protocol != ProtocolType.LDAP || StringUtils.isNotEmpty(trustStore))
-                ? String.format("\njavax.net.ssl.trustStore=%s\njavax.net.ssl.trustStorePassword=%s", trustStore, StringUtils.isEmpty(trustStorePassword) ? "" : "***")
+                ? String.format("javax.net.ssl.trustStore=%s\njavax.net.ssl.trustStorePassword=%s", trustStore, StringUtils.isEmpty(trustStorePassword) ? "" : "***")
                 : "";
 
+        String maskedPassword = StringUtils.isEmpty(password) ? "" : "***";
         return String.format(
-                "dmx.ldap.protocol=%s\ndmx.ldap.server=%s\ndmx.ldap.port=%s\ndmx.ldap.implementation=%s\ndmx.ldap.logging=%s\ndmx.ldap.user_creation.enabled=%s\ndmx.ldap.manager=%s\ndmx.ldap.password=%s\ndmx.ldap.user_base=%s\ndmx.ldap.user_attribute=%s\ndmx.ldap.user_acceptance_filter=%s\ndmx.ldap.user_member_group=%s%s",
-                protocol, server, port, implementation, loggingMode, userCreationEnabled, manager, StringUtils.isEmpty(password) ? "" : "***", userBase,
-                userAttribute, userFilter, userMemberGroup, trustStoreSummary);
+                "dmx.ldap.protocol=%s\ndmx.ldap.server=%s\ndmx.ldap.port=%s\ndmx.ldap.implementation=%s\ndmx.ldap.logging=%s\ndmx.ldap.user_creation.enabled=%s\ndmx.ldap.manager=%s\ndmx.ldap.password=%s\ndmx.ldap.user_base=%s\ndmx.ldap.user_attribute=%s\ndmx.ldap.user_acceptance_filter=%s\ndmx.ldap.user_member_group=%s\ndmx.ldap.group_base=%s\n%s",
+                protocol, server, port, implementation, loggingMode, userCreationEnabled, manager, maskedPassword, userBase,
+                userAttribute, userFilter, userMemberGroup, groupBase, trustStoreSummary);
     }
 
 }

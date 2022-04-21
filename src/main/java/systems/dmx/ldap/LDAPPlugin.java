@@ -1,23 +1,41 @@
 package systems.dmx.ldap;
 
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Logger;
-
 import systems.dmx.accesscontrol.AccessControlService;
 import systems.dmx.accesscontrol.AuthorizationMethod;
+import systems.dmx.core.Assoc;
 import systems.dmx.core.Topic;
+import systems.dmx.core.model.AssocModel;
+import systems.dmx.core.model.PlayerModel;
 import systems.dmx.core.osgi.PluginActivator;
 import systems.dmx.core.service.Inject;
 import systems.dmx.core.service.accesscontrol.Credentials;
+import systems.dmx.core.service.event.PostCreateAssoc;
+import systems.dmx.core.service.event.PostDeleteAssoc;
 import systems.dmx.core.storage.spi.DMXTransaction;
 import systems.dmx.ldap.service.LDAPPluginService;
+import systems.dmx.workspaces.WorkspacesService;
 
-public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService {
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
+public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService, PostCreateAssoc, PostDeleteAssoc {
+
+    public static final String WORKSPACE_TYPE = "dmx.workspaces.workspace";
+    public static final String GROUP_TYPE = "systems.dmx.ldap.group";
+
+    public static final String COMPOSITION_ASSOC_TYPE = "dmx.core.composition";
+    public static final String MEMBERSHIP_ASSOC_TYPE = "dmx.accesscontrol.membership";
+    public static final String USERNAME_TOPIC_TYPE = "dmx.accesscontrol.username";
 
     private static Logger logger = Logger.getLogger(LDAPPlugin.class.getName());
 
     @Inject
     private AccessControlService acs;
+
+    @Inject
+    private WorkspacesService wss;
 
     private Configuration configuration;
 
@@ -27,12 +45,16 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
 
     @Override
     public void serviceArrived(Object service) {
-        ((AccessControlService) service).registerAuthorizationMethod("LDAP", this);
+        if (service instanceof AccessControlService) {
+            ((AccessControlService) service).registerAuthorizationMethod("LDAP", this);
+        }
     }
 
     @Override
     public void serviceGone(Object service) {
-        ((AccessControlService) service).unregisterAuthorizationMethod("LDAP");
+        if (service instanceof AccessControlService) {
+            ((AccessControlService) service).unregisterAuthorizationMethod("LDAP");
+        }
     }
 
     @Override
@@ -130,7 +152,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     @Override
     public Topic changePassword(Credentials credentials) {
         if (!configuration.userCreationEnabled) {
-            pluginLog.actionWarning("Cannot change password because user creation is disabled in plugin configuration!", null);
+            pluginLog.actionWarning("Cannot change password because user creation is disabled in plugin configuration!");
 
             return null;
         }
@@ -145,6 +167,93 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         }
 
         return null;
+    }
+
+    private List<String> getMembers(Topic workspaceTopic, String excluded) {
+        return workspaceTopic.getRelatedTopics(
+                MEMBERSHIP_ASSOC_TYPE,
+                null,
+                null,
+                USERNAME_TOPIC_TYPE
+        ).stream().map(relatedTopic -> relatedTopic.getSimpleValue().toString())
+                .filter(name -> !name.equals(excluded)).collect(Collectors.toList());
+    }
+
+    private boolean isWorkspaceGroupComposition(AssocModel assoc) {
+        return isType(assoc, COMPOSITION_ASSOC_TYPE)
+                && isType(assoc.getPlayer1(), WORKSPACE_TYPE)
+                && isType(assoc.getPlayer2(), GROUP_TYPE);
+    }
+
+    private boolean isUsernameWorkspaceMembership(AssocModel assoc) {
+        return isType(assoc, MEMBERSHIP_ASSOC_TYPE)
+                && isPlayerType(assoc, USERNAME_TOPIC_TYPE)
+                && isPlayerType(assoc, WORKSPACE_TYPE);
+    }
+
+    @Override
+    public void postCreateAssoc(Assoc assoc) {
+        if (isWorkspaceGroupComposition(assoc.getModel())) {
+            String userName = acs.getWorkspaceOwner(assoc.getPlayer1().getId());
+            String group = dmx.getTopic(assoc.getPlayer2().getId()).getSimpleValue().toString();
+
+            Topic workspace = dmx.getTopic(assoc.getPlayer1().getId());
+
+            ldap.createGroup(group, userName, getMembers(workspace, userName));
+        } else if (isUsernameWorkspaceMembership(assoc.getModel())) {
+            String group = getPlayerTopicByType(assoc.getModel(), WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
+
+            String userName = getPlayerTopicByType(assoc.getModel(), USERNAME_TOPIC_TYPE).getSimpleValue().toString();
+            String workspaceOwner = acs.getWorkspaceOwner(assoc.getPlayer2().getId());
+
+            if (group != null && !userName.equals(workspaceOwner)) {
+                ldap.addMember(group, userName);
+            }
+        }
+    }
+
+    @Override
+    public void postDeleteAssoc(AssocModel assoc) {
+        if (isWorkspaceGroupComposition(assoc)) {
+            // Group name is removed from workspace: Delete group entirely
+            String group = dmx.getTopic(assoc.getPlayer2().getId()).getSimpleValue().toString();
+
+            ldap.deleteGroup(group);
+        } else if (isUsernameWorkspaceMembership(assoc)) {
+            String group = getPlayerTopicByType(assoc, WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
+
+            String userName = getPlayerTopicByType(assoc, USERNAME_TOPIC_TYPE).getSimpleValue().toString();
+            String workspaceOwner = acs.getWorkspaceOwner(assoc.getPlayer2().getId());
+
+            if (group != null && !userName.equals(workspaceOwner)) {
+                ldap.removeMember(group, userName);
+            }
+
+        }
+
+    }
+
+    private boolean isPlayerType(AssocModel assoc, String typeUri) {
+        return assoc.getPlayer1().getTypeUri().equals(typeUri)
+                || assoc.getPlayer2().getTypeUri().equals(typeUri);
+    }
+
+    private Topic getPlayerTopicByType(AssocModel assoc, String typeUri) {
+        if (assoc.getPlayer1().getTypeUri().equals(typeUri)) {
+            return dmx.getTopic(assoc.getPlayer1().getId());
+        } else if (assoc.getPlayer2().getTypeUri().equals(typeUri)) {
+            return dmx.getTopic(assoc.getPlayer2().getId());
+        }
+
+        throw new IllegalStateException("Requested topic type is not a player of the association!");
+    }
+
+    private boolean isType(PlayerModel playerModel, String typeUri) {
+        return playerModel.getTypeUri().equals(typeUri);
+    }
+
+    private boolean isType(AssocModel assoc, String typeUri) {
+        return assoc.getTypeUri().equals(typeUri);
     }
 
 }

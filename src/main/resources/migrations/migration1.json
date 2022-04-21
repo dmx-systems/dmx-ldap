@@ -1,0 +1,20 @@
+[
+  {
+    "topic_types": [
+      {
+        "value": "LDAP Group",
+        "uri": "systems.dmx.ldap.group",
+        "dataTypeUri": "dmx.core.text",
+        "viewConfigTopics": [
+          {
+            "typeUri": "dmx.webclient.view_config",
+            "children": {
+              "dmx.webclient.icon": "\uf08e",
+              "dmx.webclient.add_to_create_menu": true
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
