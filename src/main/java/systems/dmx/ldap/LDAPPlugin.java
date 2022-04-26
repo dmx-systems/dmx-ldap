@@ -169,6 +169,15 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         return null;
     }
 
+    @Override
+    public void deleteUser(String userName) {
+        Topic userTopic = acs.getUsernameTopic(userName);
+        userTopic.delete();
+        if (!ldap.deleteUser(userName)) {
+            throw new IllegalStateException("User deleted from DMX but not from LDAP.");
+        }
+    }
+
     private List<String> getMembers(Topic workspaceTopic, String excluded) {
         return workspaceTopic.getRelatedTopics(
                 MEMBERSHIP_ASSOC_TYPE,
