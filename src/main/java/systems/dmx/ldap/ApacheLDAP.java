@@ -31,6 +31,13 @@ class ApacheLDAP implements LDAP {
     }
 
     @Override
+    public boolean deleteUser(String user) {
+        // TODO: Implement
+
+        return false;
+    }
+
+    @Override
     public boolean changePassword(String user, String password) {
         // TODO: Implement
 

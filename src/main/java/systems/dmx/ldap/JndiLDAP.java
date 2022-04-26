@@ -211,6 +211,22 @@ class JndiLDAP implements LDAP {
         return true;
     }
 
+    @Override
+    public boolean deleteUser(String user) {
+        LdapContext ctx = null;
+        try {
+            ctx = connect();
+            ctx.destroySubcontext(userNameToEntryDn(user));
+
+            return true;
+        } catch (NamingException e) {
+            pluginLog.actionError(String.format("Unable to delete user from LDAP %s", user), e);
+            return false;
+        } finally {
+            closeQuietly(ctx);
+        }
+    }
+
     private String userNameToEntryDn(String userName) {
         return String.format("%s=%s,%s", configuration.userAttribute, userName, configuration.userBase);
     }

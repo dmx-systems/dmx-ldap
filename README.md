@@ -79,6 +79,10 @@ All third party components incorporated into the DMX LDAP Software are licensed 
 Spring Security Crypto 5.0.7, Apache API LDAP Client API 2.0.0.AM2, and Commons Lang 2.6 are all Apache-2.0 licensed.
 
 ## Release History
+**0.6.0** -- 
+
+* Deleting user in DMX and LDAP
+* Workspace/LDAP Group handling
 
 **0.5.3** -- Jun 30, 2021
 

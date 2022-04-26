@@ -20,4 +20,13 @@ public interface LDAPPluginService {
      */
     Topic changePassword(Credentials credentials);
 
+    /**
+     * Delete the given user's topic and LDAP user representation.
+     *
+     * Note: The method requires an open transaction!
+     *
+     * @param userName
+     */
+    void deleteUser(String userName);
+
 }

@@ -8,6 +8,8 @@ interface LDAP {
 
     boolean createUser(String user, String password, CompletableAction actionOnSuccess);
 
+    boolean deleteUser(String user);
+
     boolean changePassword(String user, String password);
 
     boolean createGroup(String group, String user, List<String> members);
@@ -44,6 +46,13 @@ interface LDAP {
 
             @Override
             public boolean createUser(String user, String password, CompletableAction actionOnSuccess) {
+                logError();
+
+                return false;
+            }
+
+            @Override
+            public boolean deleteUser(String user) {
                 logError();
 
                 return false;
