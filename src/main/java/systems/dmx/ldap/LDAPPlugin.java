@@ -8,6 +8,7 @@ import systems.dmx.core.model.AssocModel;
 import systems.dmx.core.model.PlayerModel;
 import systems.dmx.core.osgi.PluginActivator;
 import systems.dmx.core.service.Inject;
+import systems.dmx.core.service.Transactional;
 import systems.dmx.core.service.accesscontrol.Credentials;
 import systems.dmx.core.service.event.PostCreateAssoc;
 import systems.dmx.core.service.event.PostDeleteAssoc;
@@ -15,11 +16,16 @@ import systems.dmx.core.storage.spi.DMXTransaction;
 import systems.dmx.ldap.service.LDAPPluginService;
 import systems.dmx.workspaces.WorkspacesService;
 
+import javax.ws.rs.DELETE;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+@Path("/ldap")
 public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService, PostCreateAssoc, PostDeleteAssoc {
 
     public static final String WORKSPACE_TYPE = "dmx.workspaces.workspace";
@@ -169,12 +175,21 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         return null;
     }
 
+    @DELETE
+    @Path("/user/{username}")
+    @Transactional
     @Override
-    public void deleteUser(String userName) {
-        Topic userTopic = acs.getUsernameTopic(userName);
-        userTopic.delete();
-        if (!ldap.deleteUser(userName)) {
-            throw new IllegalStateException("User deleted from DMX but not from LDAP.");
+    public void deleteUser(@PathParam("username") String userName) {
+        try {
+            // delete from DMX
+            acs.getUsernameTopic(userName).delete();
+            // delete from LDAP
+            boolean success = ldap.deleteUser(userName);
+            if (!success) {
+                throw new RuntimeException("ldap.deleteUser() returned false; see server log for actual error");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Deleting LDAP user \"" + userName + "\" failed", e);
         }
     }
 
