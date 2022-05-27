@@ -81,6 +81,10 @@ Spring Security Crypto 5.0.7, Apache API LDAP Client API 2.0.0.AM2, and Commons 
 ## Release History
 **0.6.1** -- unreleased
 
+**0.6.1** -- May, 27, 2022
+
+* All usernames given by DMX are sanitised by lowercasing them 
+
 **0.6.0** -- Apr 27, 2022
 
 * Deleting user in DMX and LDAP
