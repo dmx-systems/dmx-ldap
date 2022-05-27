@@ -21,6 +21,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -89,19 +90,24 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         }
     }
 
+    private String sanitise(String sourceUsername) {
+        return sourceUsername.toLowerCase(Locale.ROOT);
+    }
+
     @Override
     public Topic checkCredentials(Credentials cred) {
-        if (ldap.checkCredentials(cred.username, cred.plaintextPassword)) {
-            Topic username = lookupOrCreateUsernameTopic(cred.username);
-            if (username != null) {
-                pluginLog.actionHint("LDAP log-in successful for user %s", cred.username);
-                return username;
+        String username = sanitise(cred.username);
+        if (ldap.checkCredentials(username, cred.plaintextPassword)) {
+            Topic usernameTopic = lookupOrCreateUsernameTopic(username);
+            if (usernameTopic != null) {
+                pluginLog.actionHint("LDAP log-in successful for user %s", username);
+                return usernameTopic;
             } else {
                 pluginLog.actionError("Credentials in LDAP are OK but unable find or create username topic", null);
                 return null;
             }
         } else {
-            pluginLog.actionError(String.format("Credential check for user %s failed.", cred.username), null);
+            pluginLog.actionError(String.format("Credential check for user %s failed.", username), null);
 
             return null;
         }
@@ -117,7 +123,8 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         // TODO: Rollback when DM user creation was not successful.
         AtomicReference<Topic> usernameTopicRef = new AtomicReference<>();
 
-        ldap.createUser(cred.username, cred.plaintextPassword, new LDAP.CompletableAction() {
+        String username = sanitise(cred.username);
+        ldap.createUser(username, cred.plaintextPassword, new LDAP.CompletableAction() {
 
             public boolean run(String username) {
                 Topic usernameTopic = null;
@@ -163,10 +170,11 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
             return null;
         }
 
-        Topic usernameTopic = acs.getUsernameTopic(credentials.username);
+        String username = sanitise(credentials.username);
+        Topic usernameTopic = acs.getUsernameTopic(username);
         if (usernameTopic != null) {
-            if (ldap.changePassword(credentials.username, credentials.plaintextPassword)) {
-                pluginLog.actionHint("Succesfully changed password for %s", credentials.username);
+            if (ldap.changePassword(username, credentials.plaintextPassword)) {
+                pluginLog.actionHint("Succesfully changed password for %s", username);
 
                 return usernameTopic;
             }
@@ -181,6 +189,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     @Override
     public void deleteUser(@PathParam("username") String userName) {
         try {
+            userName = sanitise(userName);
             // delete from DMX
             acs.getUsernameTopic(userName).delete();
             // delete from LDAP
