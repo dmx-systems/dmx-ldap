@@ -11,7 +11,7 @@ import systems.dmx.core.service.Inject;
 import systems.dmx.core.service.Transactional;
 import systems.dmx.core.service.accesscontrol.Credentials;
 import systems.dmx.core.service.event.PostCreateAssoc;
-import systems.dmx.core.service.event.PostDeleteAssoc;
+import systems.dmx.core.service.event.PreDeleteAssoc;
 import systems.dmx.core.storage.spi.DMXTransaction;
 import systems.dmx.ldap.service.LDAPPluginService;
 import systems.dmx.workspaces.WorkspacesService;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 @Path("/ldap")
 public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService, PostCreateAssoc,
-                                                                                                   PostDeleteAssoc {
+                                                                                                   PreDeleteAssoc {
 
     public static final String WORKSPACE_TYPE = "dmx.workspaces.workspace";
     public static final String GROUP_TYPE = "systems.dmx.ldap.group";
@@ -232,15 +232,16 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     }
 
     @Override
-    public void postDeleteAssoc(AssocModel assoc) {
-        if (isWorkspaceGroupComposition(assoc)) {
+    public void preDeleteAssoc(Assoc assoc) {
+        AssocModel _assoc = assoc.getModel();
+        if (isWorkspaceGroupComposition(_assoc)) {
             // Group name is removed from workspace: Delete group entirely
-            String group = dmx.getTopic(assoc.getPlayer2().getId()).getSimpleValue().toString();
+            String group = dmx.getTopic(_assoc.getPlayer2().getId()).getSimpleValue().toString();
             ldap.deleteGroup(group);
-        } else if (isUsernameWorkspaceMembership(assoc)) {
-            String group = getPlayerTopicByType(assoc, WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
-            String userName = getPlayerTopicByType(assoc, USERNAME_TOPIC_TYPE).getSimpleValue().toString();
-            String workspaceOwner = acs.getWorkspaceOwner(assoc.getPlayer2().getId());
+        } else if (isUsernameWorkspaceMembership(_assoc)) {
+            String group = getPlayerTopicByType(_assoc, WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
+            String userName = getPlayerTopicByType(_assoc, USERNAME_TOPIC_TYPE).getSimpleValue().toString();
+            String workspaceOwner = acs.getWorkspaceOwner(_assoc.getPlayer2().getId());
             if (group != null && !userName.equals(workspaceOwner)) {
                 ldap.removeMember(group, userName);
             }
