@@ -221,9 +221,8 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
             Topic workspace = dmx.getTopic(assoc.getPlayer1().getId());
             ldap.createGroup(group, userName, getMembers(workspace, userName));
         } else if (isUsernameWorkspaceMembership(assoc.getModel())) {
-            String group = getPlayerTopicByType(assoc.getModel(), WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE,
-                null);
-            String userName = getPlayerTopicByType(assoc.getModel(), USERNAME_TOPIC_TYPE).getSimpleValue().toString();
+            String group = assoc.getDMXObjectByType(WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
+            String userName = assoc.getDMXObjectByType(USERNAME_TOPIC_TYPE).getSimpleValue().toString();
             String workspaceOwner = acs.getWorkspaceOwner(assoc.getPlayer2().getId());
             if (group != null && !userName.equals(workspaceOwner)) {
                 ldap.addMember(group, userName);
@@ -239,8 +238,8 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
             String group = dmx.getTopic(_assoc.getPlayer2().getId()).getSimpleValue().toString();
             ldap.deleteGroup(group);
         } else if (isUsernameWorkspaceMembership(_assoc)) {
-            String group = getPlayerTopicByType(_assoc, WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
-            String userName = getPlayerTopicByType(_assoc, USERNAME_TOPIC_TYPE).getSimpleValue().toString();
+            String group = assoc.getDMXObjectByType(WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
+            String userName = assoc.getDMXObjectByType(USERNAME_TOPIC_TYPE).getSimpleValue().toString();
             String workspaceOwner = acs.getWorkspaceOwner(_assoc.getPlayer2().getId());
             if (group != null && !userName.equals(workspaceOwner)) {
                 ldap.removeMember(group, userName);
@@ -251,15 +250,6 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     private boolean isPlayerType(AssocModel assoc, String typeUri) {
         return assoc.getPlayer1().getTypeUri().equals(typeUri)
             || assoc.getPlayer2().getTypeUri().equals(typeUri);
-    }
-
-    private Topic getPlayerTopicByType(AssocModel assoc, String typeUri) {
-        if (assoc.getPlayer1().getTypeUri().equals(typeUri)) {
-            return dmx.getTopic(assoc.getPlayer1().getId());
-        } else if (assoc.getPlayer2().getTypeUri().equals(typeUri)) {
-            return dmx.getTopic(assoc.getPlayer2().getId());
-        }
-        throw new IllegalStateException("Requested topic type is not a player of the association!");
     }
 
     private boolean isType(PlayerModel playerModel, String typeUri) {
