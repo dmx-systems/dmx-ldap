@@ -16,7 +16,7 @@ else
 fi
 
 ## test ldap login
-LDAPPASSWORD="${TESTPASS}"
+LDAPPASSWORD='testpass'
 for user in "${USERS[@]}"; do
     LOGINNAME="$( echo "${user}" | tr '[:upper:]' '[:lower:]' | sed 's/\ /\_/g' )"
     BASE64=$( echo -n "${LOGINNAME}:${LDAPPASSWORD}" | base64 )
