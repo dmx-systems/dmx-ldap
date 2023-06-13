@@ -8,7 +8,7 @@ volumes:
 
 services:
   dmx:
-    container_name: ${CI_PROJECT_NAME}-dev-dmx-container
+    container_name: ${CI_PROJECT_NAME}-{TIER}-dmx-container
     restart: always
     image: container-registry.dmx.systems/dmx-contrib/dmx-docker/dmx-latest:latest
     links:
@@ -33,7 +33,7 @@ services:
       - "${DMX_PORT}:8080"
 
   ldap:
-    container_name: ${CI_PROJECT_NAME}-dev-ldap-container
+    container_name: ${CI_PROJECT_NAME}-${TIER}-ldap-container
     restart: unless-stopped
     command: "--copy-service --loglevel debug"
     build:
