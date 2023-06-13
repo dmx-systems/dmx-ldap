@@ -1,3 +1,9 @@
+# Define stages
+stages:
+  - build
+  - deploy
+  - install
+
 # 1) Build every commit on every branch and add the COMMIT SHORT SHA as suffix
 maven-build:
   stage: build
