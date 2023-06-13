@@ -86,18 +86,14 @@ install-in-container:
     - cp target/*.jar deploy/dmx/${TIER}/plugins/
     - declare -a PLUGINS=(${PLUGINS})
     - for plugin in "${PLUGINS[@]}"; do echo "getting latest version of ${plugin} plugin"; plugin_version="$( wget -q -O - "${WEBCGI}/ci/${plugin}/${plugin}-latest.jar" )"; echo "installing ${plugin_version}"; wget -q "${plugin_version}" -P deploy/dmx/${TIER}/plugins/; done
-    #- tree
   script:
     - if [ "${CI_COMMIT_BRANCH}" == "master" ]; then WEB_URL="${CI_PROJECT_NAME}.ci.dmx.systems"; fi
     - USER_ID="$( id -u )"
     - GROUP_ID="$( id -g )"
     - DMX_PORT="$( curl --silent --cookie-jar - https://${WEB_URL}/?proxyport=dmx | grep PROXYPORT | grep -o '[^PROXYPORT$]*$' | sed s'/\s//g' )"
-    - MAIL_PORT="$( curl --silent --cookie-jar - https://${WEB_URL}/?proxyport=mail | grep PROXYPORT | grep -o '[^PROXYPORT$]*$' | sed s'/\s//g' )"
-    # - echo "CONTAINER_NAME=${CONTAINER_NAME}" >>"${ENV_FILE}"
     - echo "user_id=${USER_ID}" >>"${ENV_FILE}"
     - echo "group_id=${GROUP_ID}" >>"${ENV_FILE}"
     - echo "DMX_PORT=${DMX_PORT}" >>"${ENV_FILE}"
-    - echo "MAIL_PORT=${MAIL_PORT}" >>"${ENV_FILE}"
     - cat "${ENV_FILE}"
     - echo "dmx.websockets.url = wss://${WEB_URL}/websocket" > deploy/dmx/${TIER}/conf.d/config.properties.d/10_websocket_url
     - echo "dmx.host.url = https://${WEB_URL}/" > deploy/dmx/${TIER}/conf.d/config.properties.d/10_host_url
