@@ -111,5 +111,5 @@ install-in-container:
     - if [ ${HTTP_CODE} -ne 200 ]; then echo "HTTP test failed with error code ${HTTP_CODE}."; exit 1; fi
     - echo "You can now browse to https://${WEB_URL}/ for testing."
     ## Test login of DMX LDAP Users
-    - deploy/dmx-test-ldap-login.sh "testuser testuser1 testuser2 testuser3"
+    - deploy/dmx-test-ldap-login.sh "testuser testuser1 testuser2"
 
