@@ -4,12 +4,12 @@
 dmx.ldap.protocol = LDAP
 dmx.ldap.server = ldap
 dmx.ldap.port = 389
-dmx.ldap.manager = cn=admin,dc=example,dc=app
+dmx.ldap.manager = cn=admin,dc=example,dc=org
 dmx.ldap.password = admin
-dmx.ldap.user_base = ou=demo_users,dc=example,dc=app
+dmx.ldap.user_base = ou=users,dc=example,dc=org
 dmx.ldap.user_attribute = uid
-#dmx.ldap.user_filter = (&(objectClass=inetOrgPerson)(memberof=cn=demo_users,ou=groups,dc=example,dc=app))
-dmx.ldap.user_member_group = 
+#dmx.ldap.user_filter = (&(objectClass=inetOrgPerson)(memberof=cn=users,ou=groups,dc=example,dc=org))
+dmx.ldap.user_member_group = cn=app_users,dc=example,dc=org
 dmx.ldap.logging = DEBUG
 dmx.ldap.user_creation.enabled = true
-dmx.ldap.group_base = dc=example,dc=app
+dmx.ldap.group_base = dc=example,dc=org
