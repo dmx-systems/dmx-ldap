@@ -28,7 +28,7 @@ for user in "${USERS[@]}"; do
     if [ ${HTTP_CODE} -eq 200 ]; then
         SESSION_ID="$( echo "${LOGIN_RESPONSE}" | grep ^Set-Cookie: | cut -d';' -f1 | cut -d'=' -f2 )"
         echo "LDAP login ${user} successful (id=${SESSION_ID})."
-    elif [ "${user}" != "thiswontwork"; then
+    elif [ "${user}" != "thiswontwork" ]; then
         echo "LDAP login ${user} failed! (${HTTP_CODE})"
         exit 1
     else
