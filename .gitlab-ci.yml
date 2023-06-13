@@ -106,7 +106,7 @@ install-in-container:
     - docker compose --env-file "${ENV_FILE}" --file deploy/docker-compose.${TIER}-ci.yaml down -v || true
     - docker image rm ${CI_PROJECT_NAME}_${CI_COMMIT_REF_SLUG}-ldap || true
     - docker compose --env-file "${ENV_FILE}" --file deploy/docker-compose.${TIER}-ci.yaml up --force-recreate -d --remove-orphans
-    - docker compose --env-file "${ENV_FILE}" --file deploy/docker-compose.${TIER}-ci.yaml up --force-recreate -d
+    # - docker compose --env-file "${ENV_FILE}" --file deploy/docker-compose.${TIER}-ci.yaml up --force-recreate -d
     - test -d ./deploy/instance/${TIER}/logs/ || echo "ERROR! Directory ./deploy/instance/${TIER}/logs/ not found."
     - deploy/scripts/dmxstate.sh ./deploy/instance/${TIER}/logs/dmx0.log 30 || cat ./deploy/instance/${TIER}/logs/dmx0.log
     ## TEST
