@@ -52,6 +52,9 @@ services:
     command: "--copy-service --loglevel debug"
     build:
       context: ./ldap/${TIER}
+      args:
+        LDAP_OPENLDAP_GID: ${user_id}
+        LDAP_OPENLDAP_UID: ${group_id}
     environment:
       LDAP_ORGANISATION: "example"
       LDAP_DOMAIN: "example.org"
@@ -61,9 +64,9 @@ services:
       LDAP_READONLY_USER: "true"
       LDAP_READONLY_USER_USERNAME: "bind"
       LDAP_READONLY_USER_PASSWORD: ${LDAP_READONLY_USER_PASSWORD}
-    #ports:
-    #  - "389:389"
-    #  - "636:636"
+    ports:
+      - "389:389"
+      - "636:636"
 
     #volumes:
       #- ldap-cfg:/etc/ldap/slapd.d
@@ -72,15 +75,15 @@ services:
     #  zukunftswerk-dev-network:
     #    ipv4_address: 10.10.10.19
 
-  mailhog:
-    container_name: ${CI_PROJECT_NAME}-dev-mailhog-container
-    restart: unless-stopped
-    image: container-registry.dmx.systems/dmx-intern/docker-images/mailhog:latest
-    #networks:
-    #  zukunftswerk-dev-network:
-    #    ipv4_address: 10.10.10.20
-    ports:
-      - "${MAIL_PORT}:8025"
+#  mailhog:
+#    container_name: ${CI_PROJECT_NAME}-dev-mailhog-container
+#    restart: unless-stopped
+#    image: container-registry.dmx.systems/dmx-intern/docker-images/mailhog:latest
+#    #networks:
+#    #  zukunftswerk-dev-network:
+#    #    ipv4_address: 10.10.10.20
+#    ports:
+#      - "${MAIL_PORT}:8025"
 
 
 #networks:
