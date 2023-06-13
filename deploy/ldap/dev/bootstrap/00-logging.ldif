@@ -1,4 +1,3 @@
-# Ansible managed
 dn: cn=config
 changetype: modify
 replace: olcLogLevel
