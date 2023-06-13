@@ -66,6 +66,7 @@ install-in-container:
     WEB_URL: "${CI_COMMIT_REF_SLUG}_${CI_PROJECT_NAME}.ci.dmx.systems"
     CONFIG_DIR: 'deploy/.config'
     ENV_FILE: "${CONFIG_DIR}/.env.${CI_COMMIT_REF_SLUG}.ci"
+    TESTPASS: "testpass"
     DMX_ADMIN_PASSWORD: ${DMX_ADMIN_PASSWORD}
     LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
     LDAP_READONLY_USER_PASSWORD: ${LDAP_READONLY_USER_PASSWORD}
@@ -110,8 +111,6 @@ install-in-container:
     - echo "${HTTP_CODE}"
     - if [ ${HTTP_CODE} -ne 200 ]; then echo "HTTP test failed with error code ${HTTP_CODE}."; exit 1; fi
     - echo "You can now browse to https://${WEB_URL}/ for testing."
-    ## Create DMX Users (doesn't work atm - proxy issue with ajax?)
-    #- deploy/dmx-signup-create-ldap-user.sh "Testuser Peter Paula Tom Tabea Claude"
-    ## Make users workspace members according to their team roles
-    #- deploy/dmx-add-users-to-ws-uri.sh "Testuser Tom Tabea" "linqa.team"
+    ## Test login of DMX LDAP Users
+    #- deploy/dmx-login-ldap-user.sh "testuser testuser1 testuser2"
 

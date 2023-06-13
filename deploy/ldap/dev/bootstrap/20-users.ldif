@@ -4,7 +4,7 @@ dn: uid=preexisting,ou=users,dc=example,dc=org
 objectClass: person
 objectClass: organizationalPerson
 objectClass: inetOrgPerson
-userPassword: testpass
+userPassword: ${TESTPASS}
 sn: dmx-ldap
 cn: preexisting
 
@@ -13,7 +13,7 @@ dn: uid=testuser,ou=users,dc=example,dc=org
 objectClass: person
 objectClass: organizationalPerson
 objectClass: inetOrgPerson
-userPassword: testpass
+userPassword: ${TESTPASS}
 sn: dmx-ldap
 cn: testuser
 
@@ -22,7 +22,7 @@ dn: uid=testuser1,ou=users,dc=example,dc=org
 objectClass: person
 objectClass: organizationalPerson
 objectClass: inetOrgPerson
-userPassword: testpass
+userPassword: ${TESTPASS}
 sn: dmx-ldap
 cn: testuser1
 
@@ -31,6 +31,6 @@ dn: uid=testuser2,ou=users,dc=example,dc=org
 objectClass: person
 objectClass: organizationalPerson
 objectClass: inetOrgPerson
-userPassword: testpass
+userPassword: ${TESTPASS}
 sn: dmx-ldap
 cn: testuser2
