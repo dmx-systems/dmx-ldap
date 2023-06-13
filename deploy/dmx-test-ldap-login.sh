@@ -1,4 +1,4 @@
-declare -a USERS=($1)
+declare -a USERS=($1 thiswontwork)
 
 USERNAME='admin'
 PASSWORD="${DMX_ADMIN_PASSWORD}"
@@ -28,8 +28,11 @@ for user in "${USERS[@]}"; do
     if [ ${HTTP_CODE} -eq 200 ]; then
         SESSION_ID="$( echo "${LOGIN_RESPONSE}" | grep ^Set-Cookie: | cut -d';' -f1 | cut -d'=' -f2 )"
         echo "LDAP login ${user} successful (id=${SESSION_ID})."
-    else
+    elif [ "${user}" != "thiswontwork"; then
         echo "LDAP login ${user} failed! (${HTTP_CODE})"
         exit 1
+    else
+        echo "LDAP login ${user} failed! (${HTTP_CODE})"
+        exit 0
     fi
 done
