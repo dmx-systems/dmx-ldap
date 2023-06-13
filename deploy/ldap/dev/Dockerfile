@@ -1,4 +1,3 @@
-#FROM osixia/openldap:1.5.0
 FROM container-registry.dmx.systems/dmx-intern/docker-images/openldap
 
 # Copies our custom bootstrap files, so that they are picked up when the container is run
