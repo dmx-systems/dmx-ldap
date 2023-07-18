@@ -110,6 +110,7 @@ install-in-container:
     - if [ ${HTTP_CODE} -ne 200 ]; then echo "HTTP test failed with error code ${HTTP_CODE}."; exit 1; fi
     - echo "You can now browse to https://${WEB_URL}/ for testing."
     ## Test login of DMX LDAP Users
+    - sleep 3
     - deploy/dmx-test-ldap-login.sh "testuser testuser1 testuser2"
   after_script:
     - docker compose --env-file "${ENV_FILE}" --file deploy/docker-compose.${TIER}-ci.yaml down -v || true
