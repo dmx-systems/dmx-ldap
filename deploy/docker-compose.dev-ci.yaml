@@ -1,8 +1,8 @@
 version: "3.8"
 
-volumes:
-  ldap-cfg:
-  ldap-db:
+#volumes:
+#  ldap-cfg:
+#  ldap-db:
 
 services:
   dmx:
@@ -44,5 +44,10 @@ services:
       LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
       LDAP_CONFIG_PASSWORD: ${LDAP_ADMIN_PASSWORD}
     volumes:
-      - ldap-cfg:/etc/ldap/slapd.d
-      - ldap-db:/var/lib/ldap
+      #- ldap-cfg:/etc/ldap/slapd.d
+      #- ldap-db:/var/lib/ldap
+      - ./ldap/db:/var/lib/ldap
+      - ./ldap/config:/etc/ldap/slapd.d
+
+
+
