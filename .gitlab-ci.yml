@@ -82,10 +82,10 @@ install-in-container:
     - test -d deploy/instance/${TIER} || mkdir -p deploy/instance/${TIER}/conf deploy/instance/${TIER}/logs deploy/instance/${TIER}/db deploy/instance/${TIER}/filedir deploy/instance/${TIER}/bundle-deploy deploy/instance/${TIER}/plugins
     - test -f deploy/scripts/dmxstate.sh || curl --silent https://git.dmx.systems/dmx-contrib/dmx-state/-/raw/master/dmxstate.sh --create-dirs -o deploy/scripts/dmxstate.sh
     - chmod +x deploy/scripts/dmxstate.sh
-    - test -d deploy/dmx/${TIER}/plugins/ || mkdir deploy/dmx/${TIER}/plugins/
-    - cp target/*.jar deploy/dmx/${TIER}/plugins/
+    - test -d deploy/dmx/${TIER}-ci/plugins/ || mkdir deploy/dmx/${TIER}-ci/plugins/
+    - cp target/*.jar deploy/dmx/${TIER}-ci/plugins/
     - declare -a PLUGINS=(${PLUGINS})
-    - for plugin in "${PLUGINS[@]}"; do echo "getting latest version of ${plugin} plugin"; plugin_version="$( wget -q -O - "${WEBCGI}/ci/${plugin}/${plugin}-latest.jar" )"; echo "installing ${plugin_version}"; wget -q "${plugin_version}" -P deploy/dmx/${TIER}/plugins/; done
+    - for plugin in "${PLUGINS[@]}"; do echo "getting latest version of ${plugin} plugin"; plugin_version="$( wget -q -O - "${WEBCGI}/ci/${plugin}/${plugin}-latest.jar" )"; echo "installing ${plugin_version}"; wget -q "${plugin_version}" -P deploy/dmx/${TIER}-ci/plugins/; done
   script:
     - if [ "${CI_COMMIT_BRANCH}" == "master" ]; then WEB_URL="${CI_PROJECT_NAME}.ci.dmx.systems"; fi
     - USER_ID="$( id -u )"

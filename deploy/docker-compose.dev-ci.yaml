@@ -26,9 +26,9 @@ services:
       - ./instance/dev/db:/opt/dmx/dmx-db
       - ./instance/dev/filedir:/opt/dmx/dmx-filedir
       - ./instance/dev/bundle-deploy:/opt/dmx/bundle-deploy
-      - ./dmx/dev/plugins:/opt/dmx/plugins:ro
-      - ./dmx/dev/conf.d/config.properties.d:/opt/dmx/conf.d/config.properties.d:ro
-      - ./dmx/dev/conf.d/logging.properties.d:/opt/dmx/conf.d/logging.properties.d:ro
+      - ./dmx/dev-ci/plugins:/opt/dmx/plugins:ro
+      - ./dmx/dev-ci/conf.d/config.properties.d:/opt/dmx/conf.d/config.properties.d:ro
+      - ./dmx/dev-ci/conf.d/logging.properties.d:/opt/dmx/conf.d/logging.properties.d:ro
     ports:
       - "${DMX_PORT}:8080"
 
@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
     command: "--copy-service --loglevel debug"
     build:
-      context: ./ldap/${TIER}
+      context: ./ldap/${TIER}-ci
     environment:
       LDAP_OPENLDAP_UID: "${user_id}"
       LDAP_OPENLDAP_GID: "${group_id}"
