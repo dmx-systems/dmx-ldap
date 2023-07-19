@@ -1,9 +1,9 @@
 version: "3.8"
 
-volumes:
+# volumes:
   # dmx-db:
-  ldap-cfg:
-  ldap-db:
+  # ldap-cfg:
+  # ldap-db:
 
 
 services:
