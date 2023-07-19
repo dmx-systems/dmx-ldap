@@ -113,6 +113,6 @@ install-in-container:
     - sleep 3
     - deploy/dmx-test-ldap-login.sh "testuser testuser1 testuser2"
   after_script:
-    #- docker compose --env-file "${ENV_FILE}" --file deploy/docker-compose.${TIER}-ci.yaml down -v || true
-    #- docker image rm ${CI_PROJECT_NAME}_${CI_COMMIT_REF_SLUG}-ldap || true
+    - docker compose --env-file "${ENV_FILE}" --file deploy/docker-compose.${TIER}-ci.yaml down -v || true
+    - docker image rm ${CI_PROJECT_NAME}_${CI_COMMIT_REF_SLUG}-ldap || true
 
