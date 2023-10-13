@@ -95,7 +95,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     @Override
     public Topic checkCredentials(Credentials cred) {
         String username = sanitise(cred.username);
-        if (ldap.checkCredentials(username, cred.plaintextPassword)) {
+        if (ldap.checkCredentials(username, cred.password)) {
             Topic usernameTopic = lookupOrCreateUsernameTopic(username);
             if (usernameTopic != null) {
                 pluginLog.actionHint("LDAP log-in successful for user %s", username);
@@ -119,7 +119,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         // TODO: Rollback when DM user creation was not successful.
         AtomicReference<Topic> usernameTopicRef = new AtomicReference<>();
         String username = sanitise(cred.username);
-        ldap.createUser(username, cred.plaintextPassword, new LDAP.CompletableAction() {
+        ldap.createUser(username, cred.password, new LDAP.CompletableAction() {
             public boolean run(String username) {
                 Topic usernameTopic = null;
                 try {
@@ -164,7 +164,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         String username = sanitise(credentials.username);
         Topic usernameTopic = acs.getUsernameTopic(username);
         if (usernameTopic != null) {
-            if (ldap.changePassword(username, credentials.plaintextPassword)) {
+            if (ldap.changePassword(username, credentials.password)) {
                 pluginLog.actionHint("Succesfully changed password for %s", username);
                 return usernameTopic;
             }
