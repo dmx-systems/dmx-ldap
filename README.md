@@ -80,6 +80,8 @@ Spring Security Crypto 5.0.7, Apache API LDAP Client API 2.0.0.AM2, and Commons 
 
 ## Release History
 **0.6.3** -- TBD
+* 
+* Compatible with DMX 5.3.3
 
 **0.6.2** -- Jul, 14, 2023
 
