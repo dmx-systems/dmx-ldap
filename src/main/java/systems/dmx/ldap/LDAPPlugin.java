@@ -13,7 +13,7 @@ import systems.dmx.core.service.accesscontrol.Credentials;
 import systems.dmx.core.service.event.PostCreateAssoc;
 import systems.dmx.core.service.event.PreDeleteAssoc;
 import systems.dmx.core.storage.spi.DMXTransaction;
-import systems.dmx.ldap.service.LDAPPluginService;
+import systems.dmx.ldap.service.LDAPService;
 import systems.dmx.workspaces.WorkspacesService;
 
 import javax.ws.rs.DELETE;
@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Path("/ldap")
-public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPPluginService, PostCreateAssoc,
+public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPService, PostCreateAssoc,
                                                                                                    PreDeleteAssoc {
 
     public static final String WORKSPACE_TYPE = "dmx.workspaces.workspace";
