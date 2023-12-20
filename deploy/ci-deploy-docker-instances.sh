@@ -57,6 +57,8 @@ if [ -z "${DMX_ADMIN_PASSWORD}" ]; then
     export DMX_ADMIN_PASSWORD="$( mkpw )"
     echo "DMX_ADMIN_PASSWORD=${DMX_ADMIN_PASSWORD}"
 fi
+export DMX_ADMIN_PASSWORD="${DMX_ADMIN_PASSWORD}"
+
 if [ -z "${LDAP_ADMIN_PASSWORD}" ]; then
     export LDAP_ADMIN_PASSWORD="$( mkpw )$( mkpw )"
     echo "LDAP_ADMIN_PASSWORD=${LDAP_ADMIN_PASSWORD}"
