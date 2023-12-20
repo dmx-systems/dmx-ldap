@@ -10,6 +10,7 @@ services:
       DEBUG:
       USER_ID: "${user_id}"
       GROUP_ID: "${group_id}"
+      DMX_ADMIN_PASSWORD: "${DMX_ADMIN_PASSWORD}"
     volumes:
       - ./instance/dev-ci/conf:/opt/dmx/conf
       - ./instance/dev-ci/logs:/opt/dmx/logs
