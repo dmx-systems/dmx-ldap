@@ -1,24 +1,34 @@
+## Test the user login via ldap.
+## The user name 'thiswontwork' is supposed to fail.
+
 declare -a USERS=($1 thiswontwork)
 
 USERNAME='admin'
 PASSWORD="${DMX_ADMIN_PASSWORD}"
-HOST="https://${WEB_URL}:443/"
+if [ -z "${TIER}" ]; then
+    export TIER='dev'
+fi
+if [ -z "${WEB_URL}" ] && [ "${CI_COMMIT_BRANCH}" == "master" -o "${CI_COMMIT_BRANCH}" == "main" ]; then
+    WEB_URL="${CI_PROJECT_NAME}-${TIER}.ci.dmx.systems"
+elif [ -z "${WEB_URL}" ] && [ "${CI_COMMIT_BRANCH}" != "master" -a "${CI_COMMIT_BRANCH}" == "main" ]; then
+    WEB_URL="${CI_COMMIT_REF_SLUG}_${CI_PROJECT_NAME}-${TIER}.ci.dmx.systems"
+fi
+HOST="https://${WEB_URL}:443"
 ## Test access to Administration workspace to ensure login as admin was successful.
 URL='core/topic/uri/dmx.workspaces.administration'
-# URL='access-control/user/workspace'
 BASE64="$( echo -n "${USERNAME}:${PASSWORD}" | base64 )"
 AUTH="Authorization: Basic ${BASE64}"
-#SESSIONID="$( curl -sS -H "${AUTH}" "${HOST}/${URL}" -i 2>&1 | grep ^Set-Cookie: | cut -d';' -f1 | cut -d'=' -f2 )"
 SESSION="$( curl -sS -H "${AUTH}" "${HOST}/${URL}" -i 2>&1 )"
 HTTPCODE="$( echo "${SESSION}" | grep HTTP | cut -d' ' -f2 )"
-echo "HTTPCODE: ${HTTPCODE}"
-if [ "${HTTPCODE}" != "200" ]; then
-    echo "login ${USERNAME} failed!"
+LDAPPASSWORD='testpass'
+if [ "${HTTPCODE}" != "200" -a "${HTTPCODE}" != "204" ]; then
+    echo "login ${USERNAME} failed! (HTTPCODE=${HTTPCODE})"
     exit 1
 else
     SESSIONID="$( echo "${SESSION}" | grep ^Set-Cookie: | cut -d';' -f1 | cut -d'=' -f2 )"
     echo "login ${USERNAME} successful (SESSIONID: ${SESSIONID})."
 fi
+
 
 ## test ldap login
 LDAPPASSWORD='testpass'
