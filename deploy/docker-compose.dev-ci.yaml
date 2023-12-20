@@ -11,6 +11,7 @@ services:
       USER_ID: "${user_id}"
       GROUP_ID: "${group_id}"
       DMX_ADMIN_PASSWORD: "${DMX_ADMIN_PASSWORD}"
+      LDAP_ADMIN_PASSWORD: "${LDAP_ADMIN_PASSWORD}"
     volumes:
       - ./instance/dev-ci/conf:/opt/dmx/conf
       - ./instance/dev-ci/logs:/opt/dmx/logs
@@ -33,8 +34,8 @@ services:
       LDAP_OPENLDAP_GID: "${group_id}"
       LDAP_TLS: "false"
       LDAP_TLS_VERIFY_CLIENT: "never"
-      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
-      LDAP_CONFIG_PASSWORD: ${LDAP_ADMIN_PASSWORD}
+      LDAP_ADMIN_PASSWORD: "${LDAP_ADMIN_PASSWORD}"
+      LDAP_CONFIG_PASSWORD: "${LDAP_ADMIN_PASSWORD}"
     volumes:
       - ./ldap/db:/var/lib/ldap
       - ./ldap/config:/etc/ldap/slapd.d
