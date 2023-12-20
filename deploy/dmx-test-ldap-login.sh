@@ -19,8 +19,8 @@ URL='core/topic/uri/dmx.workspaces.administration'
 BASE64="$( echo -n "${USERNAME}:${PASSWORD}" | base64 )"
 AUTH="Authorization: Basic ${BASE64}"
 SESSION="$( curl -sS -H "${AUTH}" "${HOST}/${URL}" -i 2>&1 )"
+echo "curl -sS -H "${AUTH}" "${HOST}/${URL}" -i 2>&1"
 HTTPCODE="$( echo "${SESSION}" | grep HTTP | cut -d' ' -f2 )"
-LDAPPASSWORD='testpass'
 if [ "${HTTPCODE}" != "200" -a "${HTTPCODE}" != "204" ]; then
     echo "login ${USERNAME} failed! (HTTPCODE=${HTTPCODE})"
     exit 1
