@@ -57,7 +57,6 @@ if [ -z "${DMX_ADMIN_PASSWORD}" ]; then
     export DMX_ADMIN_PASSWORD="$( mkpw )"
     echo "DMX_ADMIN_PASSWORD=${DMX_ADMIN_PASSWORD}"
 fi
-export DMX_ADMIN_PASSWORD="${DMX_ADMIN_PASSWORD}"
 
 if [ -z "${LDAP_ADMIN_PASSWORD}" ]; then
     export LDAP_ADMIN_PASSWORD="$( mkpw )$( mkpw )"
@@ -137,6 +136,8 @@ echo "DMX_PORT=${DMX_PORT}" >>"${ENV_FILE}"
 echo "LOGS_PORT=${LOGS_PORT}" >>"${ENV_FILE}"
 echo "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}" >>"${ENV_FILE}"
 cat "${ENV_FILE}"
+echo "DMX_ADMIN_PASSWORD=${DMX_ADMIN_PASSOWRD}" >>"${ENV_FILE}"
+echo "LDAP_ADMIN_PASSWORD=${LDAP_ADMIN_PASSOWRD}" >>"${ENV_FILE}"
 echo "dmx.websockets.url = wss://${WEB_URL}/websocket" > deploy/dmx/${DOCKER_COMPOSE_PROFILE}/conf.d/config.properties.d/10_websocket_url
 echo "dmx.host.url = https://${WEB_URL}" > deploy/dmx/${DOCKER_COMPOSE_PROFILE}/conf.d/config.properties.d/10_host_url
 
