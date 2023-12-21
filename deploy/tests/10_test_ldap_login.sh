@@ -1,6 +1,8 @@
 ## Test the user login via ldap.
 ## The user name 'thiswontwork' is supposed to fail.
 
+sleep 3
+
 declare -a USERS=($1 thiswontwork)
 
 USERNAME='admin'

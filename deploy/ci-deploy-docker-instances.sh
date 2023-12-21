@@ -6,45 +6,7 @@
 ## (jpn - 20231212)
 ##
 
-##  variables:
-if [ -z "${TIER}" ]; then
-    export TIER='dev'
-fi
-if [ -z "${COMPOSE_PROJECT_NAME}" ]; then
-    COMPOSE_PROJECT_NAME="${CI_PROJECT_NAME}_${CI_COMMIT_REF_SLUG}"
-fi
-if [ "${CI_COMMIT_BRANCH}" != "${CI_COMMIT_REF_SLUG}" ]; then
-    echo "CI_COMMIT_BRANCH: ${CI_COMMIT_BRANCH}"
-    echo "CI_COMMIT_REF_SLUG: ${CI_COMMIT_REF_SLUG}"
-fi
-if [ -z "${DEPLOY_PREFIX}" ] && [ "${CI_COMMIT_BRANCH}" == "master" -o "${CI_COMMIT_BRANCH}" == "main" ]; then
-    DEPLOY_PREFIX="${CI_PROJECT_NAME}-${TIER}"
-    export DEPLOY_PREFIX="${DEPLOY_PREFIX}"
-elif [ -z "${DEPLOY_PREFIX}" ] && [ "${CI_COMMIT_BRANCH}" != "master" -a "${CI_COMMIT_BRANCH}" != "main" ]; then
-    DEPLOY_PREFIX="${CI_COMMIT_REF_SLUG}_${CI_PROJECT_NAME}-${TIER}"
-    export DEPLOY_PREFIX="${DEPLOY_PREFIX}"
-fi
-
-if [ -z "${WEB_URL}" ]; then
-    WEB_URL="${DEPLOY_PREFIX}.ci.dmx.systems"
-fi
-if [ -z "${CONFIG_DIR}" ]; then
-    CONFIG_DIR='deploy/.config'
-fi
-if [ -z "${ENV_FILE}" ]; then
-    ENV_FILE="${CONFIG_DIR}/.env.${CI_COMMIT_REF_SLUG}.ci"
-fi
-if [ -z "${WEBDIR}" ]; then
-    WEBDIR='https://download.dmx.systems/ci'    # <= stable|latest
-fi
-if [ -z "${WEBCGI}" ]; then
-    WEBCGI='https://download.dmx.systems/cgi-bin/v1/latest-version.cgi?'        # <= stable|latest
-fi
-if [ -z "${DOCKER_COMPOSE_PROFILE}" ]; then
-    DOCKER_COMPOSE_PROFILE="${TIER}-ci"
-fi
-
-
+source deploy/ci-deploy-vars.sh
 
 function mkpw() {
     local LEN="$( shuf -i12-16 -n1 )"
@@ -122,7 +84,7 @@ if [ -z "${DMX_PORT}" ]; then
 fi
 sleep 1
 LOGS_PORT="$( get_port.sh ${WEB_URL}-log )"
-if [ "$( echo "${PLUGINS[@]}" | grep dmx-sendmail )" ]; then
+if [ "$( echo "${PLUGINS[@]}" | grep dmx-sendmail )" ] || [ "$( echo "${target}" | grep dmx-sendmail )" ]; then
     MAIL_PORT="$( get_port.sh ${WEB_URL}-mail )"
     echo "MAIL_PORT=${MAIL_PORT}" >>"${ENV_FILE}"
 else
@@ -130,11 +92,13 @@ else
     echo "INFO: mailhog not installed."
 fi
 
+## save docker environment vars to file
 echo "user_id=${USER_ID}" >>"${ENV_FILE}"
 echo "group_id=${GROUP_ID}" >>"${ENV_FILE}"
 echo "DMX_PORT=${DMX_PORT}" >>"${ENV_FILE}"
 echo "LOGS_PORT=${LOGS_PORT}" >>"${ENV_FILE}"
 echo "COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME}" >>"${ENV_FILE}"
+echo "DEPLOY_PREFIX=${DEPLOY_PREFIX}" >>"${ENV_FILE}"
 cat "${ENV_FILE}"
 echo "DMX_ADMIN_PASSWORD=${DMX_ADMIN_PASSOWRD}" >>"${ENV_FILE}"
 echo "LDAP_ADMIN_PASSWORD=${LDAP_ADMIN_PASSOWRD}" >>"${ENV_FILE}"
@@ -190,7 +154,7 @@ deploy/scripts/dmxstate.sh ./deploy/instance/${DOCKER_COMPOSE_PROFILE}/logs/dmx0
 
 ## TEST
 EXTERNAL_TEST_URL="https://${WEB_URL}/core/topic/0"
-echo -n "Testing ${EXTERNAL_TEST_URL} "
+echo -n "INFO: Testing ${EXTERNAL_TEST_URL} "
 count=0
 HTTP_CODE="$( curl -s -o /dev/null -w "%{http_code}" ${EXTERNAL_TEST_URL} )"
 while [ "${HTTP_CODE}" == "502" -a ${count} -lt 10 ]; do 
@@ -199,9 +163,19 @@ while [ "${HTTP_CODE}" == "502" -a ${count} -lt 10 ]; do
 done
 echo " => HTTP_CODE ${HTTP_CODE}"
 if [ ${HTTP_CODE} -ne 200 ]; then
-    echo "HTTP test for https://${WEB_URL}/ failed with error code ${HTTP_CODE}."
+    echo "ERROR! HTTP test for ${EXTERNAL_TEST_URL} failed with error code ${HTTP_CODE}."
     exit 1
 fi
+## run other tests
+if [ -d deploy/tests ]; then
+    TESTS="$( find deploy/tests/ -type f -name "*.sh" | grep -v *.bak | sort -n )"
+else
+    TESTS=""
+fi
+for test in ${TESTS}; do
+   echo "Running ${test}."
+   source ${test}
+done
 echo "You can now browse to https://${WEB_URL}/ for testing."
 
 ## EOF
