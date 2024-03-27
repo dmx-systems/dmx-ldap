@@ -24,7 +24,9 @@ interface LDAP {
         switch (configuration.implementation) {
             default:
             case JNDI:
-                return new JndiLDAP(configuration, pluginLog);
+                return configuration.useBindAccount
+                        ? new JndiLDAP(configuration, pluginLog)
+                        : new NonManagerJndiLDAP(configuration, pluginLog);
             case APACHE:
                 return new ApacheLDAP(configuration, pluginLog);
         }

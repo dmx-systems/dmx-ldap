@@ -22,6 +22,8 @@ public class Configuration {
 
     boolean userCreationEnabled;
 
+    boolean useBindAccount;
+
     String manager;
     String password;
 
@@ -72,6 +74,8 @@ public class Configuration {
         // jndi (default) or apache
         // c.implementation = ImplementationType.valueOf(System.getProperty("dmx.ldap.implementation", "jndi").toUpperCase());
         c.implementation = ImplementationType.JNDI;
+        // use bind account (manager) or not
+        c.useBindAccount = System.getProperty("dmx.ldap.use_bind_account", "true").equals("true");
         // 2) ### FIXME: no config defaults provided
         c.manager = System.getProperty("dmx.ldap.manager", "");
         c.password = System.getProperty("dmx.ldap.password", "");
@@ -90,6 +94,7 @@ public class Configuration {
         c.port = "389";
         c.loggingMode = LoggingMode.DEBUG;
         c.implementation = ImplementationType.JNDI;
+        c.useBindAccount = true;
         c.manager = "";
         c.password = "";
         c.userBase = "";
@@ -106,13 +111,15 @@ public class Configuration {
 
         log.configurationHint("Logging is set up for %s environment.", loggingMode.toString().toLowerCase());
 
-        if (StringUtils.isEmpty(manager)) {
-            log.configurationError("No manager account provided. Check property 'dmx.ldap.manager'!");
-            errorCount++;
-        }
+        if (useBindAccount) {
+            if (StringUtils.isEmpty(manager)) {
+                log.configurationError("No manager account provided. Check property 'dmx.ldap.manager'!");
+                errorCount++;
+            }
 
-        if (StringUtils.isEmpty(password)) {
-            log.configurationWarning("No manager password provided. Check property 'dmx.ldap.password'!");
+            if (StringUtils.isEmpty(password)) {
+                log.configurationWarning("No manager password provided. Check property 'dmx.ldap.password'!");
+            }
         }
 
         if (StringUtils.isEmpty(userBase)) {
