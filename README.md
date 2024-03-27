@@ -71,6 +71,22 @@ When the association between a workspace and a GroupDN is deleted, the correspon
 member attribute is removed. When the last entry is about to be removed, the actual groupOf object is
 deleted as well.
 
+### Usage without bind account
+By default the LDAP plugin needs a bind (or manager) account. This allows operations such as changing passwords or group
+management. However in some installations an LDAP manager account is not present but the LDAP plugin should still be
+used for DMX login purposes. This is made possible by setting:
+
+```
+dmx.ldap.use_bind_account = false
+```
+
+In this mode the manager account is not used for checking the credentials. This implies that a group lookup is also not
+done or possible. Instead the username is converted into a distinguished name using the user base and user attribute
+settings. Be sure to have those set up correctly for your environment!
+
+Note: The non-bind account operation only allows logins. Password change and group management operations are not
+possible in such a configuration!
+
 ## Licensing
 
 DMX LDAP is available freely under the GNU Affero General Public License, version 3.<br/>
@@ -79,7 +95,10 @@ All third party components incorporated into the DMX LDAP Software are licensed 
 Spring Security Crypto 5.0.7, Apache API LDAP Client API 2.0.0.AM2, and Commons Lang 2.6 are all Apache-2.0 licensed.
 
 ## Release History
-**0.7.1** -- TBD
+**0.8.0** -- TBD
+
+* Compatible with DMX 5.3.5
+* Allow usage for login purposes without bind (manager) account
 
 **0.7.0** -- Nov, 22, 2023
 

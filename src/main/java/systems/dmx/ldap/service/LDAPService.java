@@ -2,8 +2,19 @@ package systems.dmx.ldap.service;
 
 import systems.dmx.core.Topic;
 import systems.dmx.core.service.accesscontrol.Credentials;
+import systems.dmx.ldap.Configuration;
 
 public interface LDAPService {
+
+    /**
+     * Returns the configuration that is in use by the plugin.
+     *
+     * Other plugins can use the information to check the validity or compatibility
+     * of their own configuation with the one from the LDAP plugin.
+     *
+     * @return The plugin's configuration
+     */
+    Configuration getConfiguration();
 
     /**
      * Creates a new user account in the LDAP-connected service.

@@ -112,7 +112,7 @@ class JndiLDAP implements LDAP {
         LdapContext ctx = null;
         LdapContext ctx2 = null;
         try {
-            String url = configuration.getConnectionUrl();
+            String url = configuration.connectionUrl;
             ctx = connect(url, configuration.manager, configuration.password, false);
 
             String cn = lookupUserCn(ctx, username);
@@ -232,7 +232,7 @@ class JndiLDAP implements LDAP {
     }
 
     private LdapContext connect() {
-        return connect(configuration.getConnectionUrl(), configuration.manager, configuration.password, false);
+        return connect(configuration.connectionUrl, configuration.manager, configuration.password, false);
     }
 
     private LdapContext connect(String serverUrl, String username, String password, boolean suppressNamingException) {
