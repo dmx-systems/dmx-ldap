@@ -83,9 +83,13 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
                 "in the log.");
             ldap = LDAP.newDummyInstance(pluginLog);
         } else {
-            configuration.compile();
             ldap = LDAP.newInstance(configuration, pluginLog);
         }
+    }
+
+    @Override
+    public Configuration getConfiguration() {
+        return configuration;
     }
 
     private String sanitise(String sourceUsername) {

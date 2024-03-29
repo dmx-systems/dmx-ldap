@@ -13,30 +13,27 @@ import org.apache.commons.lang.StringUtils;
 
 public class Configuration {
 
-    ProtocolType protocol;
-    String server;
-    String port;
+    final ProtocolType protocol;
+    final String server;
+    final String port;
+    final String connectionUrl;
 
-    ImplementationType implementation;
-    LoggingMode loggingMode;
+    final ImplementationType implementation;
+    final LoggingMode loggingMode;
 
-    boolean userCreationEnabled;
+    final boolean userCreationEnabled;
 
-    String manager;
-    String password;
+    final boolean useBindAccount;
 
-    String userBase;
-    String userAttribute;
-    String userFilter;
-    String userMemberGroup;
+    final String manager;
+    final String password;
 
-    String groupBase;
+    final String userBase;
+    final String userAttribute;
+    final String userFilter;
+    final String userMemberGroup;
 
-    private String connectionUrl;
-
-    String getConnectionUrl() {
-        return connectionUrl;
-    }
+    final String groupBase;
 
     public enum ProtocolType {
         LDAP,
@@ -47,58 +44,95 @@ public class Configuration {
     public enum ImplementationType {
         JNDI,
         APACHE
-    };
+    }
 
     public enum LoggingMode {
         INFO,
         DEBUG
     }
 
-    private Configuration() {
-        // No op
+    private Configuration(ProtocolType protocol, String server, String port, ImplementationType implementation, LoggingMode loggingMode, boolean userCreationEnabled, boolean useBindAccount, String manager, String password, String userBase, String userAttribute, String userFilter, String userMemberGroup, String groupBase) {
+        this.protocol = protocol;
+        this.server = server;
+        if (StringUtils.isNotEmpty(port)) {
+            this.port = port;
+        } else {
+            // If no port was set, select default by protocol
+            this.port = protocol == ProtocolType.LDAP ? "636" : "389";
+        }
+        this.connectionUrl = String.format("ldap%s://%s:%s", protocol == ProtocolType.LDAPS ? "s" : "", server, port);
+        this.implementation = implementation;
+        this.loggingMode = loggingMode;
+        this.userCreationEnabled = userCreationEnabled;
+        this.useBindAccount = useBindAccount;
+        this.manager = manager;
+        this.password = password;
+        this.userBase = userBase;
+        this.userAttribute = userAttribute;
+        this.userFilter = userFilter;
+        this.userMemberGroup = userMemberGroup;
+        this.groupBase = groupBase;
     }
 
     //
     static Configuration createFromProperties() {
-        Configuration c = new Configuration();
         // 1) Providing default configuration
-        c.server = System.getProperty("dmx.ldap.server", "127.0.0.1");
+        String serverArg = System.getProperty("dmx.ldap.server", "127.0.0.1");
         // ldap (default), ldaps and starttls
-        c.protocol = ProtocolType.valueOf(System.getProperty("dmx.ldap.protocol", "ldap").toUpperCase());
-        c.port = System.getProperty("dmx.ldap.port", "389");
+        ProtocolType protocolArg = ProtocolType.valueOf(System.getProperty("dmx.ldap.protocol", "ldap").toUpperCase());
+        String portArg = System.getProperty("dmx.ldap.port", "389");
         // production (default) or troubleshooting
-        c.loggingMode = LoggingMode.valueOf(System.getProperty("dmx.ldap.logging", "info").toUpperCase());
-        c.userCreationEnabled = System.getProperty("dmx.ldap.user_creation.enabled", "false").equals("true");
+        LoggingMode loggingModeArg = LoggingMode.valueOf(System.getProperty("dmx.ldap.logging", "info").toUpperCase());
+        boolean userCreationEnabledArg = System.getProperty("dmx.ldap.user_creation.enabled", "false").equals("true");
         // jndi (default) or apache
         // c.implementation = ImplementationType.valueOf(System.getProperty("dmx.ldap.implementation", "jndi").toUpperCase());
-        c.implementation = ImplementationType.JNDI;
+        ImplementationType implementationArg = ImplementationType.JNDI;
+        // use bind account (manager) or not
+        boolean useBindAccountArg = System.getProperty("dmx.ldap.use_bind_account", "true").equals("true");
         // 2) ### FIXME: no config defaults provided
-        c.manager = System.getProperty("dmx.ldap.manager", "");
-        c.password = System.getProperty("dmx.ldap.password", "");
-        c.userBase = System.getProperty("dmx.ldap.user_base", "");
-        c.userAttribute = System.getProperty("dmx.ldap.user_attribute", "");
-        c.userFilter = System.getProperty("dmx.ldap.user_filter", "");
-        c.userMemberGroup = System.getProperty("dmx.ldap.user_member_group", "");
-        c.groupBase = System.getProperty("dmx.ldap.group_base", "");
-        return c;
+        String managerArg = System.getProperty("dmx.ldap.manager", "");
+        String passwordArg = System.getProperty("dmx.ldap.password", "");
+        String userBaseArg = System.getProperty("dmx.ldap.user_base", "");
+        String userAttributeArg = System.getProperty("dmx.ldap.user_attribute", "uid");
+        String userFilterArg = System.getProperty("dmx.ldap.user_filter", "");
+        String userMemberGroupArg = System.getProperty("dmx.ldap.user_member_group", "");
+        String groupBaseArg = System.getProperty("dmx.ldap.group_base", "");
+
+        return new Configuration(
+                protocolArg,
+                serverArg,
+                portArg,
+                implementationArg,
+                loggingModeArg,
+                userCreationEnabledArg,
+                useBindAccountArg,
+                managerArg,
+                passwordArg,
+                userBaseArg,
+                userAttributeArg,
+                userFilterArg,
+                userMemberGroupArg,
+                groupBaseArg
+        );
+
     }
 
     static Configuration createFallback() {
-        Configuration c = new Configuration();
-        c.server = "127.0.0.1";
-        c.protocol = ProtocolType.LDAP;
-        c.port = "389";
-        c.loggingMode = LoggingMode.DEBUG;
-        c.implementation = ImplementationType.JNDI;
-        c.manager = "";
-        c.password = "";
-        c.userBase = "";
-        c.userAttribute = "";
-        c.userFilter = "";
-        c.userMemberGroup = "";
-        c.groupBase = "";
-
-        return c;
+        return new Configuration(
+                ProtocolType.LDAP,
+                "127.0.0.1",
+                "389",
+                ImplementationType.JNDI,
+                LoggingMode.DEBUG,
+                false,
+                true,
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "");
     }
 
     boolean check(PluginLog log) {
@@ -106,13 +140,15 @@ public class Configuration {
 
         log.configurationHint("Logging is set up for %s environment.", loggingMode.toString().toLowerCase());
 
-        if (StringUtils.isEmpty(manager)) {
-            log.configurationError("No manager account provided. Check property 'dmx.ldap.manager'!");
-            errorCount++;
-        }
+        if (useBindAccount) {
+            if (StringUtils.isEmpty(manager)) {
+                log.configurationError("No manager account provided. Check property 'dmx.ldap.manager'!");
+                errorCount++;
+            }
 
-        if (StringUtils.isEmpty(password)) {
-            log.configurationWarning("No manager password provided. Check property 'dmx.ldap.password'!");
+            if (StringUtils.isEmpty(password)) {
+                log.configurationWarning("No manager password provided. Check property 'dmx.ldap.password'!");
+            }
         }
 
         if (StringUtils.isEmpty(userBase)) {
@@ -120,9 +156,8 @@ public class Configuration {
             errorCount++;
         }
 
-        if (StringUtils.isEmpty(userAttribute)) {
+        if (StringUtils.isEmpty(System.getProperty("dmx.ldap.user_attribute", ""))) {
             log.configurationHint("User attribute not set. Defaults to 'uid'. Check property 'dmx.ldap.user_attribute' to customize!");
-            userAttribute = "uid";
         }
 
         if (StringUtils.isEmpty(userFilter)) {
@@ -212,18 +247,6 @@ public class Configuration {
         return errorCount == 0;
     }
 
-    void compile() {
-        // If no port was set, select defaults by protocol
-        if (StringUtils.isEmpty(port)) {
-            port = protocol == ProtocolType.LDAP ? "636" : "389";
-        }
-
-        connectionUrl = String.format("ldap%s://%s:%s",
-                protocol == ProtocolType.LDAPS ? "s" : "",
-                server,
-                port);
-    }
-
     String summary() {
         String trustStore = System.getProperty("javax.net.ssl.trustStore", "");
         String trustStorePassword = System.getProperty("javax.net.ssl.trustStorePassword", "");
@@ -235,8 +258,8 @@ public class Configuration {
 
         String maskedPassword = StringUtils.isEmpty(password) ? "" : "***";
         return String.format(
-                "dmx.ldap.protocol=%s\ndmx.ldap.server=%s\ndmx.ldap.port=%s\ndmx.ldap.implementation=%s\ndmx.ldap.logging=%s\ndmx.ldap.user_creation.enabled=%s\ndmx.ldap.manager=%s\ndmx.ldap.password=%s\ndmx.ldap.user_base=%s\ndmx.ldap.user_attribute=%s\ndmx.ldap.user_acceptance_filter=%s\ndmx.ldap.user_member_group=%s\ndmx.ldap.group_base=%s\n%s",
-                protocol, server, port, implementation, loggingMode, userCreationEnabled, manager, maskedPassword, userBase,
+                "dmx.ldap.protocol=%s\ndmx.ldap.server=%s\ndmx.ldap.port=%s\ndmx.ldap.implementation=%s\ndmx.ldap.logging=%s\ndmx.ldap.user_creation.enabled=%s\ndmx.ldap.use_bind_account=%s\ndmx.ldap.manager=%s\ndmx.ldap.password=%s\ndmx.ldap.user_base=%s\ndmx.ldap.user_attribute=%s\ndmx.ldap.user_acceptance_filter=%s\ndmx.ldap.user_member_group=%s\ndmx.ldap.group_base=%s\n%s",
+                protocol, server, port, implementation, loggingMode, userCreationEnabled, useBindAccount, manager, maskedPassword, userBase,
                 userAttribute, userFilter, userMemberGroup, groupBase, trustStoreSummary);
     }
 
