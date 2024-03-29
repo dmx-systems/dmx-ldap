@@ -13,27 +13,27 @@ import org.apache.commons.lang.StringUtils;
 
 public class Configuration {
 
-    final ProtocolType protocol;
-    final String server;
-    final String port;
-    final String connectionUrl;
+    public final ProtocolType protocol;
+    public final String server;
+    public final String port;
+    public final String connectionUrl;
 
     final ImplementationType implementation;
-    final LoggingMode loggingMode;
+    public final LoggingMode loggingMode;
 
-    final boolean userCreationEnabled;
+    public final boolean userCreationEnabled;
 
-    final boolean useBindAccount;
+    public final boolean useBindAccount;
 
-    final String manager;
-    final String password;
+    public final String manager;
+    public final String password;
 
-    final String userBase;
-    final String userAttribute;
-    final String userFilter;
-    final String userMemberGroup;
+    public final String userBase;
+    public final String userAttribute;
+    public final String userFilter;
+    public final String userMemberGroup;
 
-    final String groupBase;
+    public final String groupBase;
 
     public enum ProtocolType {
         LDAP,
