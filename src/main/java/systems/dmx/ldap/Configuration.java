@@ -45,7 +45,7 @@ public class Configuration {
         DEBUG
     }
 
-    private Configuration(ProtocolType protocol, String server, String port, LoggingMode loggingMode, boolean userCreationEnabled, boolean useBindAccount, String manager, String password, String userBase, String userAttribute, String userFilter, String userMemberGroup, String groupBase) {
+    Configuration(ProtocolType protocol, String server, String port, LoggingMode loggingMode, boolean userCreationEnabled, boolean useBindAccount, String manager, String password, String userBase, String userAttribute, String userFilter, String userMemberGroup, String groupBase) {
         this.protocol = protocol;
         this.server = server;
         if (StringUtils.isNotEmpty(port)) {
