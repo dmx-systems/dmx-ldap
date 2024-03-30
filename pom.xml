@@ -5,7 +5,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <name>DMX LDAP</name>
-    <groupId>systems.dmx</groupId>
     <artifactId>dmx-ldap</artifactId>
     <version>0.8.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
@@ -17,16 +16,9 @@
     </parent>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <dagger.version>2.48.1</dagger.version>
         <dmx.version>5.3.5-SNAPSHOT</dmx.version>
-        <maven-bundle-plugin.version>4.1.0</maven-bundle-plugin.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <mockito.version>4.11.0</mockito.version>
-        <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
-        <sonar-maven-plugin.version>3.10.0.2594</sonar-maven-plugin.version>
-        <junit-jupiter.version>5.9.2</junit-jupiter.version>
+        <spring-security-crypto.version>5.8.11</spring-security-crypto.version>
+        <commons-lang3.version>3.13.0</commons-lang3.version>
     </properties>
 
     <profiles>
@@ -43,97 +35,28 @@
                 <dmx.deploy.dir>./deploy/instance/dev/bundle-deploy</dmx.deploy.dir>
             </properties>
         </profile>
-        <profile>
-            <id>coverage</id>
-            <properties>
-                <!-- <sonar.sources>src/main/java,src/main/resources-static/script</sonar.sources> -->
-                <!-- <sonar.tests>src/test/java,src/test/js</sonar.tests> -->
-                <sonar.javascript.lcov.reportPaths>coverage/lcov.info</sonar.javascript.lcov.reportPaths>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.jacoco</groupId>
-                        <artifactId>jacoco-maven-plugin</artifactId>
-                        <version>${jacoco-maven-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>prepare-agent</id>
-                                <goals>
-                                    <goal>prepare-agent</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>report</id>
-                                <goals>
-                                    <goal>report</goal>
-                                </goals>
-                                <configuration>
-                                    <formats>
-                                        <format>HTML</format>
-                                        <format>XML</format>
-                                    </formats>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.directory.api</groupId>
-            <artifactId>api-ldap-client-api</artifactId>
-            <version>2.0.0.AM2</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>2.6</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commons-lang3.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
-            <version>5.0.7.RELEASE</version>
+            <version>${spring-security-crypto.version}</version>
         </dependency>
         <dependency>
             <groupId>systems.dmx</groupId>
             <artifactId>dmx-accesscontrol</artifactId>
-            <version>5.3.5-SNAPSHOT</version>
+            <version>${dmx.version}</version>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>net.orfjackal.retrolambda</groupId>
-                <artifactId>retrolambda-maven-plugin</artifactId>
-                <version>2.5.7</version>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>process-main</goal>
-                            <goal>process-test</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <target>1.6</target>
-                    <defaultMethods>true</defaultMethods>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
@@ -142,7 +65,7 @@
                         <Bundle-SymbolicName>systems.dmx.ldap</Bundle-SymbolicName>
                         <Bundle-Activator>systems.dmx.ldap.LDAPPlugin</Bundle-Activator>
                         <Import-Package>!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
-                        <Embed-Dependency>commons-lang,spring-security-crypto</Embed-Dependency>
+                        <Embed-Dependency>commons-lang3,spring-security-crypto</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                     </instructions>
                 </configuration>

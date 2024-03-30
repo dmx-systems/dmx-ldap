@@ -21,15 +21,9 @@ interface LDAP {
     boolean removeMember(String group, String user);
 
     static LDAP newInstance(Configuration configuration, PluginLog pluginLog) {
-        switch (configuration.implementation) {
-            default:
-            case JNDI:
-                return configuration.useBindAccount
-                        ? new JndiLDAP(configuration, pluginLog)
-                        : new NonManagerJndiLDAP(configuration, pluginLog);
-            case APACHE:
-                return new ApacheLDAP(configuration, pluginLog);
-        }
+        return configuration.useBindAccount
+                ? new JndiLDAP(configuration, pluginLog)
+                : new NonManagerJndiLDAP(configuration, pluginLog);
     }
 
     static LDAP newDummyInstance(final PluginLog pluginLog) {

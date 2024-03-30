@@ -1,5 +1,7 @@
 package systems.dmx.ldap;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,8 +11,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
 
-import org.apache.commons.lang.StringUtils;
-
 public class Configuration {
 
     public final ProtocolType protocol;
@@ -18,7 +18,6 @@ public class Configuration {
     public final String port;
     public final String connectionUrl;
 
-    final ImplementationType implementation;
     public final LoggingMode loggingMode;
 
     public final boolean userCreationEnabled;
@@ -41,17 +40,12 @@ public class Configuration {
         STARTTLS
     }
 
-    public enum ImplementationType {
-        JNDI,
-        APACHE
-    }
-
     public enum LoggingMode {
         INFO,
         DEBUG
     }
 
-    private Configuration(ProtocolType protocol, String server, String port, ImplementationType implementation, LoggingMode loggingMode, boolean userCreationEnabled, boolean useBindAccount, String manager, String password, String userBase, String userAttribute, String userFilter, String userMemberGroup, String groupBase) {
+    private Configuration(ProtocolType protocol, String server, String port, LoggingMode loggingMode, boolean userCreationEnabled, boolean useBindAccount, String manager, String password, String userBase, String userAttribute, String userFilter, String userMemberGroup, String groupBase) {
         this.protocol = protocol;
         this.server = server;
         if (StringUtils.isNotEmpty(port)) {
@@ -61,7 +55,6 @@ public class Configuration {
             this.port = protocol == ProtocolType.LDAP ? "636" : "389";
         }
         this.connectionUrl = String.format("ldap%s://%s:%s", protocol == ProtocolType.LDAPS ? "s" : "", server, port);
-        this.implementation = implementation;
         this.loggingMode = loggingMode;
         this.userCreationEnabled = userCreationEnabled;
         this.useBindAccount = useBindAccount;
@@ -84,9 +77,6 @@ public class Configuration {
         // production (default) or troubleshooting
         LoggingMode loggingModeArg = LoggingMode.valueOf(System.getProperty("dmx.ldap.logging", "info").toUpperCase());
         boolean userCreationEnabledArg = System.getProperty("dmx.ldap.user_creation.enabled", "false").equals("true");
-        // jndi (default) or apache
-        // c.implementation = ImplementationType.valueOf(System.getProperty("dmx.ldap.implementation", "jndi").toUpperCase());
-        ImplementationType implementationArg = ImplementationType.JNDI;
         // use bind account (manager) or not
         boolean useBindAccountArg = System.getProperty("dmx.ldap.use_bind_account", "true").equals("true");
         // 2) ### FIXME: no config defaults provided
@@ -102,7 +92,6 @@ public class Configuration {
                 protocolArg,
                 serverArg,
                 portArg,
-                implementationArg,
                 loggingModeArg,
                 userCreationEnabledArg,
                 useBindAccountArg,
@@ -122,7 +111,6 @@ public class Configuration {
                 ProtocolType.LDAP,
                 "127.0.0.1",
                 "389",
-                ImplementationType.JNDI,
                 LoggingMode.DEBUG,
                 false,
                 true,
@@ -258,8 +246,8 @@ public class Configuration {
 
         String maskedPassword = StringUtils.isEmpty(password) ? "" : "***";
         return String.format(
-                "dmx.ldap.protocol=%s\ndmx.ldap.server=%s\ndmx.ldap.port=%s\ndmx.ldap.implementation=%s\ndmx.ldap.logging=%s\ndmx.ldap.user_creation.enabled=%s\ndmx.ldap.use_bind_account=%s\ndmx.ldap.manager=%s\ndmx.ldap.password=%s\ndmx.ldap.user_base=%s\ndmx.ldap.user_attribute=%s\ndmx.ldap.user_acceptance_filter=%s\ndmx.ldap.user_member_group=%s\ndmx.ldap.group_base=%s\n%s",
-                protocol, server, port, implementation, loggingMode, userCreationEnabled, useBindAccount, manager, maskedPassword, userBase,
+                "dmx.ldap.protocol=%s\ndmx.ldap.server=%s\ndmx.ldap.port=%s\ndmx.ldap.logging=%s\ndmx.ldap.user_creation.enabled=%s\ndmx.ldap.use_bind_account=%s\ndmx.ldap.manager=%s\ndmx.ldap.password=%s\ndmx.ldap.user_base=%s\ndmx.ldap.user_attribute=%s\ndmx.ldap.user_acceptance_filter=%s\ndmx.ldap.user_member_group=%s\ndmx.ldap.group_base=%s\n%s",
+                protocol, server, port, loggingMode, userCreationEnabled, useBindAccount, manager, maskedPassword, userBase,
                 userAttribute, userFilter, userMemberGroup, groupBase, trustStoreSummary);
     }
 

@@ -1,6 +1,6 @@
 package systems.dmx.ldap;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.LdapShaPasswordEncoder;
 
 import javax.naming.Context;
