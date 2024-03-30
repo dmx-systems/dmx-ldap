@@ -13,16 +13,17 @@ import systems.dmx.core.service.accesscontrol.Credentials;
 import systems.dmx.core.service.event.PostCreateAssoc;
 import systems.dmx.core.service.event.PreDeleteAssoc;
 import systems.dmx.core.storage.spi.DMXTransaction;
+import systems.dmx.ldap.repository.JndiRepository;
 import systems.dmx.ldap.service.LDAPService;
 import systems.dmx.workspaces.WorkspacesService;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     public static final String MEMBERSHIP_ASSOC_TYPE = "dmx.accesscontrol.membership";
     public static final String USERNAME_TOPIC_TYPE = "dmx.accesscontrol.username";
 
-    private static Logger logger = Logger.getLogger(LDAPPlugin.class.getName());
+    private static final Logger logger = Logger.getLogger(LDAPPlugin.class.getName());
 
     @Inject
     private AccessControlService acs;
@@ -47,9 +48,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
 
     private Configuration configuration;
 
-    private PluginLog pluginLog;
-
-    private LDAP ldap;
+    private JndiRepository repository;
 
     @Override
     public void serviceArrived(Object service) {
@@ -69,22 +68,21 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     public void init() {
         try {
             configuration = Configuration.createFromProperties();
-            pluginLog = PluginLog.newInstance(configuration.loggingMode);
         } catch (Exception e) {
             configuration = Configuration.createFallback();
-            pluginLog = PluginLog.newInstance(configuration.loggingMode);
-            pluginLog.configurationError("Error parsing configuration", e);
-            pluginLog.configurationHint("Configuration could not be parsed. Providing an emergency fallback " +
-                "configuration. LDAP logins will not work!");
+            logger.log(Level.SEVERE, "Error parsing configuration", e);
+            logger.log(Level.SEVERE, "Configuration could not be parsed. Providing an emergency fallback " +
+                    "configuration. LDAP logins will not work!");
         }
-        pluginLog.configurationHint("Plugin configuration:\n%s", configuration.summary());
-        if (!configuration.check(pluginLog)) {
-            pluginLog.configurationError("LDAP Plugin configuration is not correct. Please fix the issues mentioned " +
-                "in the log.");
-            ldap = LDAP.newDummyInstance(pluginLog);
+        logger.log(Level.INFO, "Plugin configuration:\n%s", configuration.summary());
+        if (!configuration.check()) {
+            logger.log(Level.SEVERE, "LDAP Plugin configuration is not correct. Please fix the issues mentioned " +
+                    "in the log.");
+            repository = JndiRepository.newDummyInstance();
         } else {
-            ldap = LDAP.newInstance(configuration, pluginLog);
+            repository = JndiRepository.newInstance(configuration);
         }
+
     }
 
     @Override
@@ -99,17 +97,17 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     @Override
     public Topic checkCredentials(Credentials cred) {
         String username = sanitise(cred.username);
-        if (ldap.checkCredentials(username, cred.password)) {
+        if (repository.checkCredentials(username, cred.password)) {
             Topic usernameTopic = lookupOrCreateUsernameTopic(username);
             if (usernameTopic != null) {
-                pluginLog.actionHint("LDAP log-in successful for user %s", username);
+                logger.info(() -> String.format("LDAP log-in successful for user %s", username));
                 return usernameTopic;
             } else {
-                pluginLog.actionError("Credentials in LDAP are OK but unable find or create username topic", null);
+                logger.severe("Credentials in LDAP are OK but unable find or create username topic");
                 return null;
             }
         } else {
-            pluginLog.actionError(String.format("Credential check for user %s failed.", username), null);
+            logger.severe(String.format("Credential check for user %s failed.", username));
             return null;
         }
     }
@@ -120,18 +118,17 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
             logger.warning("User creation is disabled in plugin configuration!");
             return null;
         }
-        // TODO: Rollback when DM user creation was not successful.
+        // TODO: Rollback when DMX user creation was not successful.
         AtomicReference<Topic> usernameTopicRef = new AtomicReference<>();
         String username = sanitise(cred.username);
-        ldap.createUser(username, cred.password, new LDAP.CompletableAction() {
+        repository.createUser(username, cred.password, new JndiRepository.CompletableAction() {
             public boolean run(String username) {
                 Topic usernameTopic = null;
                 try {
                     usernameTopic = lookupOrCreateUsernameTopic(username);
                     return usernameTopic != null;
                 } catch (Exception e) {
-                    pluginLog.actionError(String.format("Creating username %s failed but LDAP entry was already " +
-                        "created. Rolling back.", username), e);
+                    logger.log(Level.SEVERE, String.format("Creating username %s failed but LDAP entry was already created. Rolling back.", username), e);
                     throw new RuntimeException("Creating username failed", e);
                 } finally {
                     usernameTopicRef.set(usernameTopic);
@@ -161,15 +158,14 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     @Override
     public Topic changePassword(Credentials credentials) {
         if (!configuration.userCreationEnabled) {
-            pluginLog.actionWarning("Cannot change password because user creation is disabled in plugin " +
-                "configuration!");
+            logger.warning("Cannot change password because user creation is disabled in plugin configuration!");
             return null;
         }
         String username = sanitise(credentials.username);
         Topic usernameTopic = acs.getUsernameTopic(username);
         if (usernameTopic != null) {
-            if (ldap.changePassword(username, credentials.password)) {
-                pluginLog.actionHint("Succesfully changed password for %s", username);
+            if (repository.changePassword(username, credentials.password)) {
+                logger.info(() -> String.format("Succesfully changed password for %s", username));
                 return usernameTopic;
             }
         }
@@ -186,7 +182,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
             // delete from DMX
             acs.getUsernameTopic(userName).delete();
             // delete from LDAP
-            boolean success = ldap.deleteUser(userName);
+            boolean success = repository.deleteUser(userName);
             if (!success) {
                 throw new RuntimeException("ldap.deleteUser() returned false; see server log for actual error");
             }
@@ -223,13 +219,13 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
             String userName = acs.getWorkspaceOwner(assoc.getPlayer1().getId());
             String group = dmx.getTopic(assoc.getPlayer2().getId()).getSimpleValue().toString();
             Topic workspace = dmx.getTopic(assoc.getPlayer1().getId());
-            ldap.createGroup(group, userName, getMembers(workspace, userName));
+            repository.createGroup(group, userName, getMembers(workspace, userName));
         } else if (isUsernameWorkspaceMembership(assoc.getModel())) {
             String group = assoc.getDMXObjectByType(WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
             String userName = assoc.getDMXObjectByType(USERNAME_TOPIC_TYPE).getSimpleValue().toString();
             String workspaceOwner = acs.getWorkspaceOwner(assoc.getPlayer2().getId());
             if (group != null && !userName.equals(workspaceOwner)) {
-                ldap.addMember(group, userName);
+                repository.addMember(group, userName);
             }
         }
     }
@@ -240,13 +236,13 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         if (isWorkspaceGroupComposition(_assoc)) {
             // Group name is removed from workspace: Delete group entirely
             String group = dmx.getTopic(_assoc.getPlayer2().getId()).getSimpleValue().toString();
-            ldap.deleteGroup(group);
+            repository.deleteGroup(group);
         } else if (isUsernameWorkspaceMembership(_assoc)) {
             String group = assoc.getDMXObjectByType(WORKSPACE_TYPE).getChildTopics().getString(GROUP_TYPE, null);
             String userName = assoc.getDMXObjectByType(USERNAME_TOPIC_TYPE).getSimpleValue().toString();
             String workspaceOwner = acs.getWorkspaceOwner(_assoc.getPlayer2().getId());
             if (group != null && !userName.equals(workspaceOwner)) {
-                ldap.removeMember(group, userName);
+                repository.removeMember(group, userName);
             }
         }
     }
