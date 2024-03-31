@@ -74,7 +74,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
             logger.log(Level.SEVERE, "Configuration could not be parsed. Providing an emergency fallback " +
                     "configuration. LDAP logins will not work!");
         }
-        logger.log(Level.INFO, "Plugin configuration:\n%s", configuration.summary());
+        logger.info(() -> String.format("Plugin configuration:\n%s", configuration.summary()));
         if (!configuration.check()) {
             logger.log(Level.SEVERE, "LDAP Plugin configuration is not correct. Please fix the issues mentioned " +
                     "in the log.");

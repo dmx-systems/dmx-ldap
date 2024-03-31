@@ -48,6 +48,12 @@
             <artifactId>spring-security-crypto</artifactId>
             <version>${spring-security-crypto.version}</version>
         </dependency>
+        <!-- transitively required for Spring Security Crypto -->
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
         <dependency>
             <groupId>systems.dmx</groupId>
             <artifactId>dmx-accesscontrol</artifactId>
@@ -64,8 +70,8 @@
                     <instructions>
                         <Bundle-SymbolicName>systems.dmx.ldap</Bundle-SymbolicName>
                         <Bundle-Activator>systems.dmx.ldap.LDAPPlugin</Bundle-Activator>
-                        <Import-Package>!org.bouncycastle*,!org.apache.commons.logging*,*</Import-Package>
-                        <Embed-Dependency>commons-lang3,spring-security-crypto</Embed-Dependency>
+                        <Import-Package>!org.bouncycastle*,!org.apache.avalon.framework.logger*,!org.apache.log,!org.apache.log4j,*</Import-Package>
+                        <Embed-Dependency>commons-lang3,spring-security-crypto,commons-logging</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                     </instructions>
                 </configuration>
