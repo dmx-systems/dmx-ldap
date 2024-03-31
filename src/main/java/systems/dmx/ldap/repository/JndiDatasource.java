@@ -105,7 +105,7 @@ class JndiDatasource {
 
 
     void checkCredentialsWithLookup(LdapContext ctx, String username, String password) throws NamingException {
-        logger.log(Level.INFO, "Checking credentials for user %s", username);
+        logger.info(() -> String.format("Checking credentials for user %s", username));
 
         LdapContext ctx2 = null;
         try {
