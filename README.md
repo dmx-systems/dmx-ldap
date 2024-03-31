@@ -16,7 +16,6 @@ dmx.ldap.user_base =
 dmx.ldap.user_attribute = 
 dmx.ldap.user_filter = 
 dmx.ldap.user_member_group = 
-dmx.ldap.logging = INFO
 dmx.ldap.user_creation.enabled = false
 dmx.ldap.group_base = 
 ```
@@ -49,11 +48,6 @@ javax.net.ssl.trustStorePassword = changeit
 ```
 Note: For self signed certificates, dmx.ldap.server must contain the hostname of the certificate, not the IP address.
 ```
-
-Known logging values are:
- 
-- INFO (default): Only warnings and errors are logged including possible misconfigurations.
-- DEBUG: Hints, warning and errors are extensively logged during configuration and runtime phase.
 
 Interaction using Topics
 

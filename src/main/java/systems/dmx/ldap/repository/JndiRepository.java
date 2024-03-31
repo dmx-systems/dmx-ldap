@@ -1,8 +1,12 @@
-package systems.dmx.ldap;
+package systems.dmx.ldap.repository;
+
+import systems.dmx.accesscontrol.AccessControlService;
+import systems.dmx.ldap.Configuration;
 
 import java.util.List;
+import java.util.logging.Logger;
 
-interface LDAP {
+public interface JndiRepository {
 
     boolean checkCredentials(String user, String password);
 
@@ -20,23 +24,29 @@ interface LDAP {
 
     boolean removeMember(String group, String user);
 
-    static LDAP newInstance(Configuration configuration, PluginLog pluginLog) {
-        switch (configuration.implementation) {
-            default:
-            case JNDI:
-                return configuration.useBindAccount
-                        ? new JndiLDAP(configuration, pluginLog)
-                        : new NonManagerJndiLDAP(configuration, pluginLog);
-            case APACHE:
-                return new ApacheLDAP(configuration, pluginLog);
+    interface CompletableAction {
+
+        default boolean run(String userName) {
+            return true;
         }
+
     }
 
-    static LDAP newDummyInstance(final PluginLog pluginLog) {
-        return new LDAP() {
+    static JndiRepository newInstance(Configuration configuration) {
+        JndiDatasource datasource = new JndiDatasource(configuration, AccessControlService.ADMIN_USERNAME, configuration.manager);
+        return configuration.useBindAccount
+                ? new BindUserJndiRepository(configuration.manager, configuration.password, datasource)
+                : new NonBindUserJndiRepository(datasource);
+    }
+
+    static JndiRepository newDummyInstance() {
+
+        final Logger logger = Logger.getLogger(JndiRepository.class.getName());
+
+        return new JndiRepository() {
 
             private void logError() {
-                pluginLog.actionError("LDAP plugin cannot fulfill request as it was not configured correctly.", null);
+                logger.severe("LDAP plugin cannot fulfill request as it was not configured correctly.");
             }
 
             @Override
@@ -96,13 +106,4 @@ interface LDAP {
             }
         };
     }
-
-    interface CompletableAction {
-
-        default boolean run(String userName) {
-            return true;
-        }
-
-    }
-
 }
