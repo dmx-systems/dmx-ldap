@@ -24,6 +24,8 @@ public class Configuration {
 
     public final boolean userCreationEnabled;
 
+    public final boolean userDeletionEnabled;
+
     public final boolean useBindAccount;
 
     public final String manager;
@@ -42,7 +44,7 @@ public class Configuration {
         STARTTLS
     }
 
-    public Configuration(ProtocolType protocolType, String server, String port, boolean userCreationEnabled, boolean useBindAccount, String manager, String password, String userBase, String userAttribute, String userFilter, String userMemberGroup, String groupBase) {
+    public Configuration(ProtocolType protocolType, String server, String port, boolean userCreationEnabled, boolean userDeletionEnabled, boolean useBindAccount, String manager, String password, String userBase, String userAttribute, String userFilter, String userMemberGroup, String groupBase) {
         this.protocolType = protocolType;
         this.server = server;
         if (StringUtils.isNotEmpty(port)) {
@@ -53,6 +55,7 @@ public class Configuration {
         }
         this.connectionUrl = String.format("ldap%s://%s:%s", protocolType == ProtocolType.LDAPS ? "s" : "", server, port);
         this.userCreationEnabled = userCreationEnabled;
+        this.userDeletionEnabled = userDeletionEnabled;
         this.useBindAccount = useBindAccount;
         this.manager = manager;
         this.password = password;
@@ -72,6 +75,7 @@ public class Configuration {
         String portArg = System.getProperty("dmx.ldap.port", "389");
         // production (default) or troubleshooting
         boolean userCreationEnabledArg = System.getProperty("dmx.ldap.user_creation.enabled", "false").equals("true");
+        boolean userDeletionEnabledArg = System.getProperty("dmx.ldap.user_deletion.enabled", "false").equals("true");
         // use bind account (manager) or not
         boolean useBindAccountArg = System.getProperty("dmx.ldap.use_bind_account", "true").equals("true");
         // 2) ### FIXME: no config defaults provided
@@ -88,6 +92,7 @@ public class Configuration {
                 serverArg,
                 portArg,
                 userCreationEnabledArg,
+                userDeletionEnabledArg,
                 useBindAccountArg,
                 managerArg,
                 passwordArg,
@@ -105,6 +110,7 @@ public class Configuration {
                 ProtocolType.LDAP,
                 "127.0.0.1",
                 "389",
+                false,
                 false,
                 true,
                 "",
