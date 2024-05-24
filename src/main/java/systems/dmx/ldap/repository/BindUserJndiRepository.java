@@ -3,8 +3,12 @@ package systems.dmx.ldap.repository;
 import javax.naming.NamingException;
 import javax.naming.ldap.LdapContext;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class BindUserJndiRepository implements JndiRepository {
+
+    private static final Logger logger = Logger.getLogger(BindUserJndiRepository.class.getName());
 
     private final String manager;
 
@@ -37,6 +41,7 @@ class BindUserJndiRepository implements JndiRepository {
 
             return actionOnSuccess.run(username);
         } catch (NamingException ne) {
+            logger.log(Level.WARNING, "Creating LDAP user did not succeed", ne);
             return false;
         } finally {
             datasource.closeQuietly(ctx);
