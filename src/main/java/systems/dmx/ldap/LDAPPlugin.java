@@ -126,6 +126,11 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
                 Topic usernameTopic = null;
                 try {
                     usernameTopic = lookupOrCreateUsernameTopic(username);
+
+                    if (usernameTopic == null) {
+                        logger.log(Level.WARNING, String.format("Creation or lookup of username topic for %s had not succeeded", username));
+                    }
+
                     return usernameTopic != null;
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, String.format("Creating username %s failed but LDAP entry was already created. Rolling back.", username), e);
