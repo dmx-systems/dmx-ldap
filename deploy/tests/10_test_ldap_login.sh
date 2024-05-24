@@ -45,10 +45,10 @@ for user in "${USERS[@]}"; do
         SESSION_ID="$( echo "${LOGIN_RESPONSE}" | grep ^Set-Cookie: | cut -d';' -f1 | cut -d'=' -f2 )"
         echo "LDAP login ${user} successful (id=${SESSION_ID})."
     elif [ "${user}" != "thiswontwork" ]; then
-        echo "LDAP login ${user} failed! (${HTTP_CODE})"
+        echo "ERROR! LDAP login ${user} failed! (${HTTP_CODE})"
         exit 1
     else
-        echo "LDAP login ${user} failed! (${HTTP_CODE})"
-        exit 0
+        echo "INFO: LDAP login ${user} failed as expected. (${HTTP_CODE})"
+        # exit 0
     fi
 done
