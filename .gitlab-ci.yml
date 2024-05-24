@@ -4,6 +4,10 @@ stages:
   - deploy
   - install
 
+# A temporary fix for accessing the local docker repo is to unset $DOCKER_AUTH_CONFIG
+variables:
+  DOCKER_AUTH_CONFIG:
+
 # 1) Build every commit on every branch and add the COMMIT SHORT SHA as suffix
 maven-build:
   image: container-registry.dmx.systems/dmx-intern/docker-images/maven-npm-nodejs
