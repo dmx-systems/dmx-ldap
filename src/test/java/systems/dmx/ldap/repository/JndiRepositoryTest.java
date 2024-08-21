@@ -14,7 +14,7 @@ class JndiRepositoryTest {
         // given:
         boolean useBindAccount = true;
         Configuration configuration = new Configuration(
-                Configuration.ProtocolType.LDAP, "localhost", "", false,
+                Configuration.ProtocolType.LDAP, "localhost", "", false, false,
                 useBindAccount,
                 "", "", "", "", "", "", ""
         );
@@ -32,7 +32,7 @@ class JndiRepositoryTest {
         // given:
         boolean useBindAccount = false;
         Configuration configuration = new Configuration(
-                Configuration.ProtocolType.LDAP, "localhost", "", false,
+                Configuration.ProtocolType.LDAP, "localhost", "", false, false,
                 useBindAccount,
                 "", "", "", "", "", "", ""
         );

@@ -1,7 +1,8 @@
 package systems.dmx.ldap;
 
 import systems.dmx.accesscontrol.AccessControlService;
-import systems.dmx.accesscontrol.AuthorizationMethod;
+import systems.dmx.accountmanagement.AccountManagementService;
+import systems.dmx.accountmanagement.AccountManager;
 import systems.dmx.core.Assoc;
 import systems.dmx.core.Topic;
 import systems.dmx.core.model.AssocModel;
@@ -9,10 +10,8 @@ import systems.dmx.core.model.PlayerModel;
 import systems.dmx.core.osgi.PluginActivator;
 import systems.dmx.core.service.Inject;
 import systems.dmx.core.service.Transactional;
-import systems.dmx.core.service.accesscontrol.Credentials;
 import systems.dmx.core.service.event.PostCreateAssoc;
 import systems.dmx.core.service.event.PreDeleteAssoc;
-import systems.dmx.core.storage.spi.DMXTransaction;
 import systems.dmx.ldap.repository.JndiRepository;
 import systems.dmx.ldap.service.LDAPService;
 import systems.dmx.workspaces.WorkspacesService;
@@ -22,18 +21,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Path("/ldap")
-public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, LDAPService, PostCreateAssoc,
-                                                                                                   PreDeleteAssoc {
+public class LDAPPlugin extends PluginActivator implements LDAPService, PostCreateAssoc, PreDeleteAssoc {
 
     public static final String WORKSPACE_TYPE = "dmx.workspaces.workspace";
     public static final String GROUP_TYPE = "systems.dmx.ldap.group";
-
     public static final String COMPOSITION_ASSOC_TYPE = "dmx.core.composition";
     public static final String MEMBERSHIP_ASSOC_TYPE = "dmx.accesscontrol.membership";
     public static final String USERNAME_TOPIC_TYPE = "dmx.accesscontrol.username";
@@ -46,21 +42,24 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
     @Inject
     private WorkspacesService wss;
 
+    @Inject
+    private AccountManagementService accountManagementService;
+
     private Configuration configuration;
 
     private JndiRepository repository;
 
+    private AccountManager accountManager;
+
     @Override
     public void serviceArrived(Object service) {
-        if (service instanceof AccessControlService) {
-            ((AccessControlService) service).registerAuthorizationMethod("LDAP", this);
-        }
+        // Nothing to do
     }
 
     @Override
     public void serviceGone(Object service) {
-        if (service instanceof AccessControlService) {
-            ((AccessControlService) service).unregisterAuthorizationMethod("LDAP");
+        if (service instanceof AccountManagementService && accountManager != null) {
+            ((AccountManagementService) service).unregisterAccountManager(accountManager);
         }
     }
 
@@ -83,6 +82,8 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
             repository = JndiRepository.newInstance(configuration);
         }
 
+        accountManager = new LDAPAccountManager(configuration, repository);
+        accountManagementService.registerAccountManager(accountManager);
     }
 
     @Override
@@ -94,89 +95,6 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         return sourceUsername.toLowerCase(Locale.ROOT);
     }
 
-    @Override
-    public Topic checkCredentials(Credentials cred) {
-        String username = sanitise(cred.username);
-        if (repository.checkCredentials(username, cred.password)) {
-            Topic usernameTopic = lookupOrCreateUsernameTopic(username);
-            if (usernameTopic != null) {
-                logger.info(() -> String.format("LDAP log-in successful for user %s", username));
-                return usernameTopic;
-            } else {
-                logger.severe("Credentials in LDAP are OK but unable find or create username topic");
-                return null;
-            }
-        } else {
-            logger.severe(String.format("Credential check for user %s failed.", username));
-            return null;
-        }
-    }
-
-    @Override
-    public Topic createUser(Credentials cred) {
-        if (!configuration.userCreationEnabled) {
-            logger.warning("User creation is disabled in plugin configuration!");
-            return null;
-        }
-        // TODO: Rollback when DMX user creation was not successful.
-        AtomicReference<Topic> usernameTopicRef = new AtomicReference<>();
-        String username = sanitise(cred.username);
-        repository.createUser(username, cred.password, new JndiRepository.CompletableAction() {
-            public boolean run(String username) {
-                Topic usernameTopic = null;
-                try {
-                    usernameTopic = lookupOrCreateUsernameTopic(username);
-
-                    if (usernameTopic == null) {
-                        logger.log(Level.WARNING, String.format("Creation or lookup of username topic for %s had not succeeded", username));
-                    }
-
-                    return usernameTopic != null;
-                } catch (Exception e) {
-                    logger.log(Level.SEVERE, String.format("Creating username %s failed but LDAP entry was already created. Rolling back.", username), e);
-                    throw new RuntimeException("Creating username failed", e);
-                } finally {
-                    usernameTopicRef.set(usernameTopic);
-                }
-            }
-        });
-        return usernameTopicRef.get();
-    }
-
-    private Topic lookupOrCreateUsernameTopic(String username) {
-        Topic usernameTopic = acs.getUsernameTopic(username);
-        if (usernameTopic != null) {
-            return usernameTopic;
-        } else {
-            DMXTransaction tx = dmx.beginTx();
-            try {
-                usernameTopic = acs.createUsername(username);
-                tx.success();
-
-                return usernameTopic;
-            } finally {
-                tx.finish();
-            }
-        }
-    }
-
-    @Override
-    public Topic changePassword(Credentials credentials) {
-        if (!configuration.userCreationEnabled) {
-            logger.warning("Cannot change password because user creation is disabled in plugin configuration!");
-            return null;
-        }
-        String username = sanitise(credentials.username);
-        Topic usernameTopic = acs.getUsernameTopic(username);
-        if (usernameTopic != null) {
-            if (repository.changePassword(username, credentials.password)) {
-                logger.info(() -> String.format("Succesfully changed password for %s", username));
-                return usernameTopic;
-            }
-        }
-        return null;
-    }
-
     @DELETE
     @Path("/user/{username}")
     @Transactional
@@ -185,7 +103,7 @@ public class LDAPPlugin extends PluginActivator implements AuthorizationMethod, 
         try {
             userName = sanitise(userName);
             // delete from DMX
-            acs.getUsernameTopic(userName).delete();
+            dmx.getPrivilegedAccess().getUsernameTopic(userName).delete();
             // delete from LDAP
             boolean success = repository.deleteUser(userName);
             if (!success) {

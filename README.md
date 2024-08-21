@@ -17,6 +17,7 @@ dmx.ldap.user_attribute =
 dmx.ldap.user_filter = 
 dmx.ldap.user_member_group = 
 dmx.ldap.user_creation.enabled = false
+dmx.ldap.user_deletion.enabled = false
 dmx.ldap.group_base = 
 ```
 LDAP Group functionality:
@@ -33,6 +34,13 @@ User creation:
 The plugin is able to create new entries in the LDAP through a plugin method. However this critical functionality is
 only available if the property dmx.ldap.user_creation.enabled is set to true and the given manager account has write
 privilege in the LDAP.
+
+User deletion:
+The plugin is able to delete users from LDAP when the respective user had been deleted from DMX. This is an optional
+behavior which you most likely only should enable when your LDAP is used exclusively for DMX. If the LDAP is used for
+different systems, you probably do not want automatic deletion. By default the feature is disabled.
+Note that the functionality can only work if an manager account has been configured that has write privileges in the
+LDAP.
 
 Known Protocols are: 
 
@@ -89,6 +97,10 @@ All third party components incorporated into the DMX LDAP Software are licensed 
 Spring Security Crypto 5.0.7, Apache API LDAP Client API 2.0.0.AM2, and Commons Lang 2.6 are all Apache-2.0 licensed.
 
 ## Release History
+**0.9.0** -- TBD
+
+* Supports DMX' decentralized user account management
+
 **0.8.0** -- TBD
 
 * Compatible with DMX 5.3.5
