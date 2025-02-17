@@ -97,11 +97,13 @@ All third party components incorporated into the DMX LDAP Software are licensed 
 Spring Security Crypto 5.0.7, Apache API LDAP Client API 2.0.0.AM2, and Commons Lang 2.6 are all Apache-2.0 licensed.
 
 ## Release History
-**0.9.0** -- TBD
 
-* Supports DMX' decentralized user account management
+**0.9.0** -- Feb 17, 2025
 
-**0.8.0** -- TBD
+* Added basic unit tests / Revised CI
+* Compatible with DMX's decentralized account management as of DMX 5.3.5
+
+**0.8.0** -- *not released*
 
 * Compatible with DMX 5.3.5
 * Allow usage for login purposes without bind (manager) account
@@ -138,5 +140,4 @@ Spring Security Crypto 5.0.7, Apache API LDAP Client API 2.0.0.AM2, and Commons 
 
 ## Copyright
 
-Copyright (C) 2018-2019 DMX Systems
-
+Copyright (C) 2018-2025 DMX Systems

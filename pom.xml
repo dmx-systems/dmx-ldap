@@ -6,7 +6,7 @@
 
     <name>DMX LDAP</name>
     <artifactId>dmx-ldap</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0</version>
     <packaging>bundle</packaging>
 
     <parent>
