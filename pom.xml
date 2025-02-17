@@ -12,11 +12,11 @@
     <parent>
         <groupId>systems.dmx</groupId>
         <artifactId>dmx-plugin</artifactId>
-        <version>5.3.5-SNAPSHOT</version>
+        <version>5.3.5</version>
     </parent>
 
     <properties>
-        <dmx.version>5.3.5-SNAPSHOT</dmx.version>
+        <dmx.version>5.3.5</dmx.version>
         <spring-security-crypto.version>5.8.11</spring-security-crypto.version>
         <commons-lang3.version>3.13.0</commons-lang3.version>
     </properties>
